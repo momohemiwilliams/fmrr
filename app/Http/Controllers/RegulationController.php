@@ -1,0 +1,1037 @@
+<?php
+namespace App\Http\Controllers;
+
+use App\Helpers\LogActivity;
+use App\Models\Category;
+use App\Models\DocumentApproval;
+use App\Models\Entity;
+use App\Models\Regulation;
+use App\Models\Subcategory;
+use App\Models\User;
+use App\Models\Year;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
+
+class RegulationController extends Controller
+{
+    /**
+     * create a new instance of the class
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:document-list|document-create|document-edit|document-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:document-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:document-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:document-delete', ['only' => ['destroy']]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!Auth::user()->hasPermissionTo('document-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $permission = 'document-approve';
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
+            ->get();
+
+        // Check if the user has the 'view-all-documents' permission
+        $canViewAllGroups = $user->hasPermissionTo('view-all-documents');
+
+        // Base query with permission check
+        $query = Regulation::orderBy('created_at', 'desc')
+            ->where(function ($q) use ($user, $canViewAllGroups) {
+                // Condition to filter documents by the user's group
+                $q->where('group_id', $user->group_id);
+
+                // If the user has permission to view all documents, include them
+                if ($canViewAllGroups) {
+                    $q->orWhereNotNull('id'); // This will include all categories
+                }
+            });
+
+        $search = $request->input('search');
+
+        if ($search) {
+            $query->where('title', 'LIKE', "%{$search}%");
+        }
+
+        $data = $query->paginate(20)->appends($request->all());
+
+        $statuses          = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statuses);
+
+        $regulation_pending = DocumentApproval::all();
+        $categories = Category::where('status', 1)->get();
+        
+        return view('regulations.index', compact('data', 'categories', 'authoriser', 'formattedStatuses', 'regulation_pending'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+          $entities   = Entity::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
+        $alpha      = DB::table('alpha')->get();
+
+        return view('regulations.add_regulation', compact('entities', 'categories', 'alpha'));
+    }
+
+    public function getCategory(Request $request)
+    {
+
+        $category_id = DB::table('subcategories')
+            ->where('category_id', $request->category_id)
+            ->get();
+
+        if (count($category_id) > 0) {
+            return response()->json($category_id);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        //return $request;
+
+        $user_id = Auth::user()->id;
+        $user    = User::find($user_id);
+
+        // return $request;
+        $inputter_time = Carbon::now();
+        $userId        = Auth::user()->id;
+
+        $regulation_doc = $request->file('pdf_file');
+
+        //return  $request;
+        $validator = Validator::make($request->all(), [
+            'pdf_file' => 'required|file|mimes:pdf',
+            // 'csv_file' => 'required|file|mimes:csv,txt',
+
+        ]);
+
+        if ($validator->fails()) {
+            // Validation failed, handle the errors
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $slug                             = Str::slug($request->title);
+        $new_regulation                   = new regulation();
+        $new_regulation->title            = $request['title'];
+        $new_regulation->effective_date   = $request['effective_date'];
+        $new_regulation->issue_date       = $request['issue_date'];
+        $new_regulation->document_version = $request['document_version'];
+        $new_regulation->year_id          = $request['year_id'];
+        $new_regulation->month_id         = $request['month_id'];
+        $new_regulation->entity_id        = $request['entity_id'];
+        $new_regulation->category_id      = $request['category_id'];
+        $new_regulation->subcategory_id   = $request['subcategory_id'];
+        $new_regulation->alpha_id         = $request['alpha_id'];
+        $new_regulation->document_tag     = $request['document_tag'];
+        $new_regulation->ceased_date      = $request['ceased_date'];
+
+        // Normalize ceased: support single value or array (from multi-select)
+        // Filter out empty values and "NULL" strings
+        $ceasedValue = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValue = implode(',', $ceasedArray);
+            }
+        }
+        $new_regulation->ceased = $ceasedValue;
+        $new_regulation->doc_preview      = $request['doc_preview'];
+        $new_regulation->doc_preview_count = $request['doc_preview_count'];
+        
+        // Save related documents if provided
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $new_regulation->related_docs = implode(',', $request->related_docs);
+        }
+        
+        // Handle nested related documents (document relationships)
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Process document relationships
+            foreach ($request->nested_related_docs as $relatedDocId) {
+                // Check if relationship already exists to avoid duplicates
+                $existingRelationship = \App\Models\DocumentRelationship::where('source_document_id', $new_regulation->id)
+                    ->where('related_document_id', $relatedDocId)
+                    ->first();
+                
+                if (!$existingRelationship) {
+                    $documentRelationship = new \App\Models\DocumentRelationship();
+                    $documentRelationship->source_document_id = $new_regulation->id;
+                    $documentRelationship->related_document_id = $relatedDocId;
+                    $documentRelationship->relationship_type = $request->relationship_type[$relatedDocId] ?? 'Related';
+                    $documentRelationship->notes = $request->relationship_notes[$relatedDocId] ?? null;
+                    $documentRelationship->is_active = true;
+                    $documentRelationship->created_by = Auth::id();
+                    $documentRelationship->group_id = $user->group_id;
+                    $documentRelationship->save();
+                }
+            }
+        }
+
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $new_regulation->market_product_tag = implode(',', $request->market_product_tags);
+        }
+
+       
+        $new_regulation->slug     = $slug;
+        $new_regulation->group_id = $user->group_id;
+
+        $new_regulation->save();
+        $id = $new_regulation->id;
+
+     
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        if ($regulation_doc) {
+            $new_regulation_doc = regulation::find($id);
+            $regulation_doc     = $regulation_doc;
+            $name               = Str::slug($request->title) . '.' . $regulation_doc->getClientOriginalExtension();
+            $destinationPath    = public_path('pdf_documents');
+            $regulation_doc->move($destinationPath, time() . '-' . $name);
+            $db_file = time() . '-' . $name;
+
+            $new_regulation_doc->regulation_doc = $db_file;
+            $new_regulation_doc->save();
+        }
+
+        $inputter_time = Carbon::now();
+        $userId        = Auth::user()->id;
+
+        $regulation_approval                = new DocumentApproval();
+        $regulation_approval->regulation_id = $id;
+        $regulation_approval->inputter_id   = $userId;
+        $regulation_approval->status        = 0;        // Initial admin_status for approval process
+        $regulation_approval->action_type   = 'Insert'; // Initial admin_status for approval process
+
+        $regulation_approval->title            = $request['title'];
+        $regulation_approval->effective_date   = $request['effective_date'];
+        $regulation_approval->issue_date       = $request['issue_date'];
+        $regulation_approval->document_version = $request['document_version'];
+        $regulation_approval->year_id          = $request['year_id'];
+        $regulation_approval->month_id         = $request['month_id'];
+        $regulation_approval->entity_id        = $request['entity_id'];
+        $regulation_approval->category_id      = $request['category_id'];
+        $regulation_approval->subcategory_id   = $request['subcategory_id'];
+        $regulation_approval->alpha_id         = $request['alpha_id'];
+        $regulation_approval->document_tag     = $request['document_tag'];
+        $regulation_approval->ceased_date      = $request['ceased_date'];
+    // Use the normalized ceased value (if set) for the approval record as well
+    $regulation_approval->ceased           = isset($ceasedValue) ? $ceasedValue : null;
+        $regulation_approval->doc_preview      = $request['doc_preview'];
+        $regulation_approval->regulation_doc   = $db_file;
+        // Add related_docs to the approval record
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
+        
+        // Handle nested related documents for approval records
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Store nested related document IDs temporarily in approval record
+            $regulation_approval->temp_nested_related_docs = json_encode($request->nested_related_docs);
+            $regulation_approval->temp_relationship_types = json_encode($request->relationship_type ?? []);
+            $regulation_approval->temp_relationship_notes = json_encode($request->relationship_notes ?? []);
+        }
+
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $new_regulation->marketProductTags()->sync($request->market_product_tags);
+        }
+
+
+
+        $regulation_approval->slug             = $slug;
+        $regulation_approval->group_id         = $user->group_id;
+
+        $regulation_approval->authoriser_time = $inputter_time;
+        $regulation_approval->save();
+
+        $action = $request['title'];
+        $title  = 'Please be advised that a new Document (' . $action . ') has been uploaded and is awaiting your review and approval.';
+
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document creation request  by ' . Auth::user()->name);
+
+        $authorise_email = User::where('id', $request->authorizer_id)->first();
+
+        $authorise_email = $authorise_email->email;
+
+        // Notify users after the application is created
+        $this->InsertnotifyUsers($action, $title, $authorise_email);
+
+        $inputter_email = Auth::user()->email;
+        $inputter_title = 'Please be advised that Document  (' . $action . ') has been created.';
+        $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
+
+        return Redirect::to('regulations')->with('success', 'Document uploaded successfully.');
+    }
+
+    public function update_doc(Request $request, $id)
+    {
+
+       // return $request;
+        $validator = Validator::make($request->all(), [
+            // 'pdf_file' => 'required|file|mimes:pdf',
+            // 'csv_file' => 'required|file|mimes:csv,txt',
+
+        ]);
+
+        if ($validator->fails()) {
+            // Validation failed, handle the errors
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $user_id = Auth::user()->id;
+        $user    = User::find($user_id);
+
+        $regulation_doc = $request->file('pdf_file');
+
+        $admin_status      = 0;
+         $regulation_update = Regulation::find($id);
+        $slug              = Str::slug($request->title);
+
+        $regulation_update->admin_status = $admin_status;
+        // $regulation_update->group_id = $user->group_id;
+
+        $regulation_update->save();
+        $id = $regulation_update->id;
+
+        // Sync market product tags
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $regulation_update->marketProductTags()->sync($request->market_product_tags);
+        }
+
+        //$new_document_tag = regulation::find($id);
+        $year = Year::find($request['year_id'])->first();
+
+        $inputter_time = Carbon::now();
+        $userId        = Auth::user()->id;
+
+        $regulation_approval                = new DocumentApproval();
+        $regulation_approval->regulation_id = $id;
+        $regulation_approval->inputter_id   = $userId;
+        $regulation_approval->status        = 0;      // Initial admin_status for approval process
+        $regulation_approval->action_type   = 'Edit'; // Initial admin_status for approval process
+
+        $regulation_approval->title            = $request['title'];
+        $regulation_approval->effective_date   = $request['effective_date'];
+        $regulation_approval->issue_date       = $request['issue_date'];
+        $regulation_approval->document_version = $request['document_version'];
+        $regulation_approval->year_id          = $request['year_id'];
+        $regulation_approval->month_id         = $request['month_id'];
+        $regulation_approval->entity_id        = $request['entity_id'];
+        $regulation_approval->category_id      = $request['category_id'];
+        $regulation_approval->subcategory_id   = $request['subcategory_id'];
+        $regulation_approval->alpha_id         = $request['alpha_id'];
+
+        $regulation_approval->document_tag   = $request['document_tag'];
+        $regulation_approval->doc_preview    = $request['doc_preview'];
+        $regulation_approval->doc_preview_count = $request['doc_preview_count'];
+        // Add related_docs to the approval record
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation_approval->related_docs = implode(',', $request->related_docs);
+        }
+        
+        // Handle nested related documents for approval records
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // Store nested related document IDs temporarily in approval record
+            $regulation_approval->temp_nested_related_docs = json_encode($request->nested_related_docs);
+            $regulation_approval->temp_relationship_types = json_encode($request->relationship_type ?? []);
+            $regulation_approval->temp_relationship_notes = json_encode($request->relationship_notes ?? []);
+        } else {
+            // If no nested related docs in request, check if document already has relationships
+            // and preserve them in the approval record
+            $existingRelationships = $regulation_update->sourceRelationships()->pluck('related_document_id')->toArray();
+            if (!empty($existingRelationships)) {
+                $regulation_approval->temp_nested_related_docs = json_encode($existingRelationships);
+                
+                // Get existing relationship types and notes
+                $existingTypes = [];
+                $existingNotes = [];
+                $relationships = $regulation_update->sourceRelationships()->get();
+                foreach ($relationships as $rel) {
+                    $existingTypes[$rel->related_document_id] = $rel->relationship_type;
+                    $existingNotes[$rel->related_document_id] = $rel->notes;
+                }
+                $regulation_approval->temp_relationship_types = json_encode($existingTypes);
+                $regulation_approval->temp_relationship_notes = json_encode($existingNotes);
+            }
+        }
+
+        if ($request->has('market_product_tags') && is_array($request->market_product_tags)) {
+            $regulation_approval->market_product_tags = implode(',', $request->market_product_tags);
+        }
+
+
+        $regulation_approval->ceased_date    = $request['ceased_date'];
+        // Normalize ceased: support array or single value for edit approval
+        // Filter out empty strings and "NULL" literal string
+        $ceasedValueEdit = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValueEdit = implode(',', $ceasedArray);
+            }
+        }
+        $regulation_approval->ceased         = $ceasedValueEdit;
+        $regulation_approval->slug           = $slug;
+        $regulation_approval->group_id       = $user->group_id;
+        $regulation_approval->regulation_doc = $regulation_update->regulation_doc;
+
+        $regulation_approval->inputter_time = $inputter_time;
+        $regulation_approval->save();
+
+        if ($regulation_doc) {
+            $new_regulation_doc     = regulation::find($id);
+            $pending_regulation_doc = DocumentApproval::where('regulation_id', $id)->latest()->first();
+            $regulation_doc         = $regulation_doc;
+            $name                   = Str::slug($request->title) . '.' . $regulation_doc->getClientOriginalExtension();
+            $destinationPath        = public_path('pdf_documents');
+            $regulation_doc->move($destinationPath, time() . '-' . $name);
+            $db_file                                = time() . '-' . $name;
+            $new_regulation_doc->regulation_doc     = $db_file;
+            $pending_regulation_doc->regulation_doc = $db_file;
+            $new_regulation_doc->save();
+            $pending_regulation_doc->save();
+        }
+
+      
+
+        $action = $request['title'];
+        $title  = 'Please be advised that a new Document (' . $action . ') has been updated and is awaiting your review and approval.';
+
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document update request by ' . Auth::user()->name);
+
+        $authorise_email = User::where('id', $request->authorizer_id)->first();
+
+        $authorise_email = $authorise_email->email;
+
+        // Notify users after the application is created
+        $this->InsertnotifyUsers($action, $title, $authorise_email);
+
+        $inputter_email = Auth::user()->email;
+        $inputter_title = 'Please be advised that Document  (' . $action . ') has been updated.';
+        $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
+
+        //return   $new_regulation;
+        return Redirect::to('regulations')->with('success', 'Document updated successfully.');
+    }
+
+    public function show($id)
+    {
+        $regulation = Regulation::find($id);
+
+        return view('categories.show', compact('regulation'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit_doc($id)
+    {
+
+          if (!Auth::user()->hasPermissionTo('document-create')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+
+        $regulation = Regulation::where('id', $id)->first();
+        $entities   = Entity::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
+        $alpha      = DB::table('alpha')->get();
+        $years      = DB::table('years')->get();
+        $months     = DB::table('months')->get();
+
+        $user = Auth::user();
+        $permission = 'document-approve';
+
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
+            ->get();
+        $statuses = DB::table('doc_type')->get();
+
+        $statua            = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statua);
+
+        // Get related documents for the same category with eager loading
+        $relatedDocuments = Regulation::with(['month', 'year'])
+            ->where('category_id', $regulation->category_id)
+            ->where('admin_status', 1) // Only approved documents
+            ->orderBy('title')
+            ->get();
+        
+        // Fetch only IDs of related documents once to avoid recursive accessor calls in the blade loop
+        $relatedDocumentsIds = $regulation->relatedDocuments->pluck('id')->toArray();
+
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('regulations.edit_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'relatedDocumentsIds', 'marketProductTags'));
+    }
+
+    public function view_doc($id)
+    {
+        $regulation = Regulation::where('id', $id)->first();
+        $entities   = Entity::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
+        $alpha      = DB::table('alpha')->get();
+        $years      = DB::table('years')->get();
+        $months     = DB::table('months')->get();
+
+        $user = Auth::user();
+
+        if (!Auth::user()->hasPermissionTo('document-list')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $permission = 'document-approve';
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
+            ->get();
+        $statuses = DB::table('doc_type')->get();
+
+        $statua            = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statua);
+
+        // Get related documents for the same category with eager loading
+        $relatedDocuments = Regulation::with(['month', 'year'])
+            ->where('category_id', $regulation->category_id)
+            ->where('admin_status', 1) // Only approved documents
+            ->where('id', '!=', $regulation->id) // Exclude current document
+            ->orderBy('title')
+            ->get();
+        
+        // Fetch only IDs of related documents once to avoid recursive accessor calls in the blade loop
+        $relatedDocumentsIds = $regulation->relatedDocuments->pluck('id')->toArray();
+
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('regulations.view_document', compact('regulation', 'entities', 'categories', 'alpha', 'years', 'months', 'authoriser', 'statuses', 'formattedStatuses', 'relatedDocuments', 'relatedDocumentsIds', 'marketProductTags'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+
+       
+        $this->validate($request, [
+            'name' => 'required',
+
+        ]);
+
+        $regulation = Regulation::find($id);
+        
+        // Update the regulation with the request data
+        $regulation->title = $request->title;
+        $regulation->effective_date = $request->effective_date;
+        $regulation->issue_date = $request->issue_date;
+        $regulation->document_version = $request->document_version;
+        $regulation->year_id = $request->year_id;
+        $regulation->month_id = $request->month_id;
+        $regulation->entity_id = $request->entity_id;
+        $regulation->category_id = $request->category_id;
+        $regulation->subcategory_id = $request->subcategory_id;
+        $regulation->alpha_id = $request->alpha_id;
+        $regulation->document_tag = $request->document_tag;
+    $regulation->ceased_date = $request->ceased_date;
+    // Support multi-select input for ceased (normalize array to comma-separated string, filter empty and NULL)
+    $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+    $ceasedArray = array_filter($ceasedArray, function($val) {
+        return !empty($val) && $val !== '' && $val !== 'NULL';
+    });
+    $regulation->ceased = !empty($ceasedArray) ? implode(',', $ceasedArray) : null;
+        $regulation->doc_preview = $request->doc_preview;
+        $regulation->doc_preview_count = $request->doc_preview_count;
+        
+        // Update related documents if provided
+        if ($request->has('related_docs') && is_array($request->related_docs)) {
+            $regulation->related_docs = implode(',', $request->related_docs);
+        } else {
+            $regulation->related_docs = null;
+        }
+        
+        // Handle nested related documents (document relationships)
+        if ($request->has('nested_related_docs') && is_array($request->nested_related_docs)) {
+            // First, remove existing relationships for this document as source
+            \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
+            
+            // Then create new relationships
+            foreach ($request->nested_related_docs as $relatedDocId) {
+                $documentRelationship = new \App\Models\DocumentRelationship();
+                $documentRelationship->source_document_id = $regulation->id;
+                $documentRelationship->related_document_id = $relatedDocId;
+                $documentRelationship->relationship_type = $request->relationship_type[$relatedDocId] ?? 'Related';
+                $documentRelationship->notes = $request->relationship_notes[$relatedDocId] ?? null;
+                $documentRelationship->is_active = true;
+                $documentRelationship->created_by = Auth::id();
+                $documentRelationship->group_id = $regulation->group_id;
+                $documentRelationship->save();
+            }
+        } else {
+            // If no nested related docs provided, remove existing relationships
+            \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
+        }
+        
+        $regulation->slug = Str::slug($request->title);
+        
+        $regulation->save();
+
+        return redirect()->back()->with('success', 'Document updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Request $request, $id)
+    {
+
+        $user_id = Auth::user()->id;
+        $user    = User::find($user_id);
+
+        $regulation = Regulation::find($id);
+
+        $regulation->admin_status = 3;
+
+        $regulation->save();
+
+        $inputter_time = Carbon::now();
+        $userId        = Auth::user()->id;
+
+        $regulation_approval                = new DocumentApproval();
+        $regulation_approval->regulation_id = $id;
+        $regulation_approval->inputter_id   = $userId;
+        $regulation_approval->status        = 0;        // Initial admin_status for approval process
+        $regulation_approval->action_type   = 'Delete'; // Initial admin_status for approval process
+
+        $regulation_approval->authoriser_time = $inputter_time;
+        $regulation_approval->save();
+
+        $action = $regulation->title;
+        $title  = 'Please be advised that a  Document (' . $action . ') has been deleted and is awaiting your review and approval.';
+
+        LogActivity::addToLog(' Document  (' . $request['title'] . ') Document delete request by ' . Auth::user()->name);
+
+        $authorise_email = User::where('id', $request->authorizer_id)->first();
+
+        $authorise_email = $authorise_email->email;
+
+        // Notify users after the application is created
+        $this->InsertnotifyUsers($action, $title, $authorise_email);
+
+        $inputter_email = Auth::user()->email;
+        $inputter_title = 'Please be advised that Document  (' . $action . ') has been deleted.';
+        $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
+
+        return Redirect::back()->with('success', 'Document successfully deleted and pending approval.');
+    }
+
+    public function redirectToUrl($selectedValue)
+    {
+        if (!Auth::user()->hasPermissionTo('document-create')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+       
+         $user = Auth::user();
+        $permission = 'document-approve';
+
+        $authoriser = User::where('group_id', $user->group_id)->where('status', 1)
+            ->permission($permission)
+            ->get();
+
+        $entities   = Entity::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
+        $cate = Category::where('slug', $selectedValue)->first();
+        $alpha      = DB::table('alpha')->get();
+        $years      = DB::table('years')->get();
+        $months     = DB::table('months')->get();
+
+        $statuses = DB::table('doc_type')->get();
+
+
+         $relatedDocuments = Regulation::where('category_id', $cate->id)
+                    ->where('admin_status', 1) // Only approved documents
+                    ->orderBy('title')
+                    ->get();
+        
+        // Get nested related documents (all documents for relationship selection)
+        $nestedRelatedDocuments = Regulation::where('admin_status', 1) // Only approved documents
+            ->orderBy('title')
+            ->get();
+
+         $statua            = DB::table('doc_type')->pluck('name')->toArray();
+        $formattedStatuses = implode('/', $statua);
+
+
+        $marketProductTags = \App\Models\MarketProductTag::where('status', 1)
+            ->where('admin_status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('regulations.add_new', [
+            'selectedValue' => $selectedValue,
+            'entities'      => $entities,
+            'categories'    => $categories,
+            'alpha'         => $alpha,
+            'years'         => $years,
+            'months'        => $months,
+            'authoriser'    => $authoriser,
+            'statuses'      => $statuses,
+            'formattedStatuses' => $formattedStatuses,
+            'relatedDocuments' => $relatedDocuments,
+            'nestedRelatedDocuments' => $nestedRelatedDocuments,
+            'marketProductTags' => $marketProductTags
+        ]);
+    }
+
+    public function regstatus(Request $request, $id)
+    {
+        $regulation = Regulation::find($id);
+        $approval = DocumentApproval::where('regulation_id', $id)
+            ->whereNull('authoriser_id')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$approval) {
+            return redirect()->back()->with('error', 'No pending approval request found for this document.');
+        }
+
+        try {
+            return DB::transaction(function () use ($request, $regulation, $approval) {
+                if ($request->status == 1) {
+                    $this->processRegulationApproval($regulation, $approval);
+                    $msg = 'Request approved successfully.';
+                } else {
+                    $this->processRegulationRejection($request, $regulation, $approval);
+                    $msg = 'Request rejected.';
+                }
+
+                $this->logAndNotifyRegulationSuccess($regulation, $approval, $request->status);
+
+                return redirect()->back()->with('success', $msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Regulation status update failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    private function processRegulationApproval($regulation, $approval)
+    {
+        $authoriser_time = Carbon::now();
+        $approval->status = 1;
+        $approval->authoriser_id = Auth::id();
+        $approval->authoriser_time = $authoriser_time;
+        $approval->save();
+
+        if ($approval->action_type == 'Delete') {
+            $regulation->admin_status = 1;
+            $regulation->save();
+            $regulation->delete();
+            return;
+        }
+
+        if ($approval->action_type == 'Edit') {
+            $regulation->title = $approval->title;
+            $regulation->effective_date = $approval->effective_date;
+            $regulation->issue_date = $approval->issue_date;
+            $regulation->document_version = $approval->document_version;
+            $regulation->year_id = $approval->year_id;
+            $regulation->month_id = $approval->month_id;
+            $regulation->entity_id = $approval->entity_id;
+            $regulation->category_id = $approval->category_id;
+            $regulation->subcategory_id = $approval->subcategory_id;
+            $regulation->alpha_id = $approval->alpha_id;
+            $regulation->document_tag = $approval->document_tag;
+            $regulation->ceased_date = $approval->ceased_date;
+            $regulation->ceased = $approval->ceased;
+            $regulation->slug = $approval->slug;
+            $regulation->group_id = $approval->group_id;
+            $regulation->regulation_doc = $approval->regulation_doc;
+            $regulation->doc_preview = $approval->doc_preview;
+            $regulation->doc_preview_count = $approval->doc_preview_count;
+            $regulation->market_product_tag = $approval->market_product_tag;
+        }
+
+        $regulation->status = 1;
+        $regulation->admin_status = 1;
+        $regulation->related_docs = $approval->related_docs;
+
+        if (!empty($approval->temp_nested_related_docs)) {
+            $regulation->nested_related_docs = $approval->temp_nested_related_docs;
+            
+            $nestedRelatedDocs = json_decode($approval->temp_nested_related_docs, true);
+            if (is_array($nestedRelatedDocs)) {
+                \App\Models\DocumentRelationship::where('source_document_id', $regulation->id)->delete();
+                
+                $relationshipTypes = json_decode($approval->temp_relationship_types, true) ?: [];
+                $relationshipNotes = json_decode($approval->temp_relationship_notes, true) ?: [];
+
+                foreach ($nestedRelatedDocs as $relatedDocId) {
+                    $relationship = new \App\Models\DocumentRelationship();
+                    $relationship->source_document_id = $regulation->id;
+                    $relationship->related_document_id = $relatedDocId;
+                    $relationship->relationship_type = $relationshipTypes[$relatedDocId] ?? 'Related';
+                    $relationship->notes = $relationshipNotes[$relatedDocId] ?? null;
+                    $relationship->is_active = true;
+                    $relationship->created_by = Auth::id();
+                    $relationship->group_id = $regulation->group_id;
+                    $relationship->save();
+                }
+            }
+        }
+        $regulation->save();
+    }
+
+    private function processRegulationRejection($request, $regulation, $approval)
+    {
+        $approval->status = $request->status;
+        if (isset($approval->admin_status)) {
+            $approval->admin_status = $request->status;
+        }
+        $approval->note = $request->note;
+        $approval->authoriser_id = Auth::id();
+        $approval->authoriser_time = Carbon::now();
+        $approval->save();
+
+        $regulation->note = $request->note;
+        $regulation->admin_status = ($approval->action_type == 'Insert') ? $request->status : 1;
+        $regulation->save();
+    }
+
+    private function logAndNotifyRegulationSuccess($regulation, $approval, $decision)
+    {
+        $action = $regulation->title;
+        $inputter_email = Auth::user()->email;
+        $isApprove = ($decision == 1);
+
+        if ($isApprove) {
+            $this->ApprovenotifyUsersnew($action);
+            $type = ($approval->action_type == 'Insert') ? 'creation' : strtolower($approval->action_type);
+            $title = "Document ($action) $type request approved.";
+            LogActivity::addToLog("Document ($action) Document $type request approved by " . Auth::user()->name);
+        } else {
+            $this->ApprovenotifyReject($action, $approval->note);
+            $type = ($approval->action_type == 'Insert') ? 'creation' : strtolower($approval->action_type);
+            $title = "Document ($action) Document $type request rejected.";
+            LogActivity::addToLog("Document ($action) Document $type request rejected by " . Auth::user()->name);
+        }
+
+        $this->insertNotifyInputter($action, "Please be advised that $title", $inputter_email);
+    }
+
+    public function admin_statusceased(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'ceased' => 'required',
+
+        ]);
+
+        $ceased_update = Regulation::find($id);
+
+        // Normalize ceased value: support array (from multi-select) or single value
+        // Filter out empty strings and "NULL" literal string
+        $ceasedValue = null;
+        if ($request->has('ceased')) {
+            $ceasedArray = is_array($request->ceased) ? $request->ceased : [$request->ceased];
+            // Filter out empty strings and "NULL" literal string
+            $ceasedArray = array_filter($ceasedArray, function($val) {
+                return !empty($val) && $val !== '' && $val !== 'NULL';
+            });
+            if (!empty($ceasedArray)) {
+                $ceasedValue = implode(',', $ceasedArray);
+            }
+        }
+
+        // Proceed with updating the Category
+        $ceased_update->ceased = $ceasedValue;
+        $ceased_update->save();
+
+        return redirect()->back()->with('success', 'Document admin_status successfully updated.');
+    }
+
+    public function getSubcategoriesByCategory($categoryId)
+    {
+        $subcategories = Subcategory::where('category_id', $categoryId)
+            ->where('status', 1)
+            ->get();
+            
+        return response()->json($subcategories);
+    }
+    
+    public function getRelatedDocumentsByCategory($categoryId)
+    {
+        $documents = Regulation::where('category_id', $categoryId)
+            ->where('admin_status', 1) // Only approved documents
+            ->orderBy('title')
+            ->get();
+            
+        return response()->json($documents);
+    }
+
+    private function insertNotifyUsers($action, $title, $authorise_email)
+    {
+        try {
+
+            $email_data = [
+                'email'  => $authorise_email,
+                'action' => $action,
+                'title'  => $title,
+            ];
+
+            Mail::to($authorise_email)->queue(new \App\Mail\NotifyUser($email_data));
+            // }
+        } catch (\Exception $e) {
+            Log::error('Failed to queue emails for authorisers', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function ApprovenotifyUsersnew($action)
+    {
+        try {
+            $user = Auth::user();
+            $role = 'Content_Owner_Inputter';
+
+            $inputter = User::where('group_id', $user->group_id)
+                ->role($role)
+                ->get();
+
+            $title = 'Please be informed  the Document  (' . $action . ') has been approved.';
+
+            foreach ($inputter as $user) {
+                $email_data = [
+                    'email'  => $user->email,
+                    'title'  => $title,
+                    'action' => $action,
+                ];
+
+                Mail::to($user->email)->queue(new \App\Mail\NotifyUser($email_data));
+            }
+        } catch (\Exception $e) {
+            // Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function ApprovenotifyReject($action, $note)
+    {
+        try {
+            $currentUser = Auth::user();
+            $role        = 'Content_Owner_Inputter';
+
+            // Retrieve all users in the same group with the specified role
+            $inputters = User::where('group_id', $currentUser->group_id)
+                ->role($role)
+                ->get();
+
+            // Prepare the email content
+            $title = 'Please be advised that the Document (' . e($action) . ') has been rejected and requires your attention.';
+
+            // Loop through the users and queue the email for each
+            foreach ($inputters as $inputter) {
+                $emailData = [
+                    'email'  => $inputter->email,
+                    'title'  => $title,
+                    'action' => $action,
+                    'note'   => $note,
+                ];
+
+                Mail::to($inputter->email)->queue(new \App\Mail\NotifyUserApplicationReject($emailData));
+            }
+        } catch (\Exception $e) {
+            // Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function ApprovenotifyDeletion($action)
+    {
+        try {
+            $user = Auth::user();
+            $role = 'Content_Owner_Inputter';
+
+            $inputter = User::where('group_id', $user->group_id)
+                ->role($role)
+                ->get();
+
+            $title = 'Please be informed  the News alert (' . $action . ') has been deleted.';
+
+            foreach ($inputter as $user) {
+                $email_data = [
+                    'email'  => $user->email,
+                    'title'  => $title,
+                    'action' => $action,
+                ];
+
+                Mail::to($user->email)->queue(new \App\Mail\NotifyUser($email_data));
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to queue emails for Inputter', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function insertNotifyInputter($action, $inputter_title, $inputter_email)
+    {
+        try {
+
+            $email_data = [
+                'email'  => $inputter_email,
+                'action' => $action,
+                'title'  => $inputter_title,
+            ];
+
+            Mail::to($inputter_email)->queue(new \App\Mail\NotifyUser($email_data));
+            // }
+        } catch (\Exception $e) {
+            Log::error('Failed to queue emails for authorisers', ['error' => $e->getMessage()]);
+        }
+    }
+    
+}

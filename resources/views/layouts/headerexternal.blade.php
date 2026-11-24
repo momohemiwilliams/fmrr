@@ -1,0 +1,101 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="session-timeout-minutes" content="{{ \App\Models\SessionSetting::getCurrentTimeout() }}">
+    <link rel="stylesheet" href="{{ asset('public/users/style.css') }}" />
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js" integrity="sha384-JUMjoW8OzDJw4oFpWIB2Bu/c6768ObEthBMVSiIx4ruBIEdyNSUQAjJNFqT5pnJ6" crossorigin="anonymous"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>FMRR Home</title>
+</head>
+
+<body>
+    <div class="full-page">
+        <div class="content">
+            <section class="top-half-guidelines">
+                <div class="w-1100">
+                    @include('layouts.appnavbar')
+
+                    @yield('content')
+                </div>
+            </section>
+
+            <footer class="footer" style="width: 100% !important; border-radius: 0 !important; margin: 0 !important; background-color: #0B0B0E;">
+                <div class="w-1100">
+                    <div class="full-width">
+                        <!-- <div class="footer-logo">
+                            <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQ Logo" />
+                        </div> -->
+                    </div>
+                    <div class="footer-desc" style="padding: 0 20px; margin: 0 auto; text-align: center;">
+                        <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.15); margin: 0 0 20px;" />
+                        <div class="footer-d" style="color: rgba(227, 227, 238, 0.7); font-size: 13px; line-height: 1.6;">
+                            Powered by iQx Consult Limited.<br>
+                            Copyright &copy; FMDQ Group PLC. All rights reserved.
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        $(window).on('load', function() {
+            // Preloader
+            $('.loader').fadeOut();
+            $('.loader-mask').delay(250).fadeOut('slow');
+        });
+
+        $(document).ready(function() {
+            @if (isset($errors) && $errors->any())
+                @php
+                    $errorMessages = implode('<br>', $errors->all());
+                @endphp
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    html: '{!! $errorMessages !!}',
+                    confirmButtonColor: '#3c4d62'
+                });
+            @endif
+
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: "{{ session('success') }}",
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#3c4d62'
+                });
+            @endif
+
+            // Delegated click handler to guarantee immediate dismissal on toast close button click
+            $(document).on('click', '.toast-close-button, #toast-container .toast-close-button', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $toast = $(this).closest('.toast, .toastr');
+                $toast.stop(true, true).fadeOut(200, function() {
+                    $(this).remove();
+                    if ($('#toast-container').children().length === 0) {
+                        $('#toast-container').remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

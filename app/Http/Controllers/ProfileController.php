@@ -1,0 +1,187 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\SaveDoc;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Download;
+use App\Models\Subscription;
+use App\Models\InstitutionalSubscriptionMember;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+
+class ProfileController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+ 
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Check if user has completed their profile
+       // $profileComplete = !empty($user->name) && !empty($user->email) && !empty($user->phone);
+        
+        // If profile is not complete, show profile completion page
+        // If profile is complete, check disclaimer status
+        // if ($profileComplete) {
+        //     // Check if disclaimer has been accepted
+        //     $disclaimerAccepted = Session::get('disclaimer_accepted', false);
+        //     $disclaimerAcceptance = $user->disclaimerAcceptance;
+            
+        //     // If disclaimer accepted, redirect to home
+        //     if ($disclaimerAccepted || $disclaimerAcceptance) {
+        //         return redirect()->route('home');
+        //     }
+        // }
+
+        $today = Carbon::now();
+
+        $isSubscribed = Subscription::where('user_id', $user->id)
+            ->where('status', 1)
+            ->where(function ($query) use ($today) {
+                $query->where('end_date', '>=', $today)
+                    ->orWhereNull('end_date');
+            })
+            ->exists();
+
+        $savedDocuments = SaveDoc::with('regulation')->where('user_id', $user->id)->get();
+        $downloadedDocuments = Download::with('regulation')->where('user_id', $user->id)->get();
+
+        // Retrieve the user's active subscription with its plan, or fallback to the most recent subscription
+        $userPlan = Subscription::with('subscriptionPlan')
+            ->where('user_id', $user->id)
+            ->where('status', 1)
+            ->where(function ($query) use ($today) {
+                $query->where('end_date', '>=', $today)
+                    ->orWhereNull('end_date');
+            })
+            ->latest('id')
+            ->first();
+
+        if (!$userPlan) {
+            $userPlan = Subscription::with('subscriptionPlan')
+                ->where('user_id', $user->id)
+                ->latest('id')
+                ->first();
+        }
+
+        $docDownloaded = Download::where('user_id', $user->id)->count();
+        $docSaved = SaveDoc::where('user_id', $user->id)->count();
+
+        $isInstitutionalAcademic = $userPlan && $userPlan->subscriptionPlan && (
+            ($userPlan->subscriptionPlan->seat_limit ?? 0) > 1 ||
+            str_contains(strtolower($userPlan->subscriptionPlan->name ?? ''), 'institutional academic')
+        );
+
+        $isTeamMemberOnly = InstitutionalSubscriptionMember::where('member_user_id', $user->id)
+            ->where('status', InstitutionalSubscriptionMember::STATUS_ACTIVE)
+            ->exists();
+
+        $canManageTeam = $userPlan
+            && $userPlan->status == 1
+            && $userPlan->end_date && $userPlan->end_date->isFuture()
+            && $isInstitutionalAcademic
+            && !$isTeamMemberOnly;
+
+        $teamMembersCount = 0;
+        if ($canManageTeam) {
+            $teamMembersCount = InstitutionalSubscriptionMember::where('owner_subscription_id', $userPlan->id)
+                ->where('status', InstitutionalSubscriptionMember::STATUS_ACTIVE)
+                ->count();
+        }
+
+        return view('profile', compact('savedDocuments', 'userPlan', 'docSaved', 'docDownloaded', 'downloadedDocuments', 'isSubscribed', 'canManageTeam', 'teamMembersCount'));
+    }
+
+
+
+    public function profilepasssword()
+    {
+        return view('external.profile_password');
+    }
+
+
+
+    public function userpasswordupdate(Request $request)
+    {
+        $user = Auth::user();
+
+
+        if ($request['password'] != "") {
+            if (!(Hash::check($request['password'], Auth::user()->password))) {
+                return redirect()->back()->with('error', 'Your current Password does not match');
+            }
+
+            if (strcmp($request['password'], $request['new_password']) == 0) {
+                return redirect()->back()->with('error', 'New password cannot be the same as current password');
+            }
+
+            $validation = $request->validate([
+                'password' => 'required',
+                'new_password' => [
+                    'required',
+                    'string',
+                    'min:8',             // must be at least 10 characters in length
+                    'regex:/[a-z]/',      // must contain at least one lowercase letter
+                    'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                    'regex:/[0-9]/',      // must contain at least one digit
+                    // 'regex:/[@$!%*#?&]/', // must contain a special character
+                ],
+            ]);
+
+            $user->password = bcrypt($request['new_password']);
+            $user->save();
+        }
+        return redirect()->back()->with('success', 'Password Updated');
+    }
+
+
+    public function updateprofile(Request $request)
+    {
+        $user = Auth::user();
+
+        // Validate the request
+        $request->validate([
+            'email' => 'required|email|exists:users',
+            'password' => 'nullable|string|min:8|confirmed',
+            'password' => [
+                'nullable',
+                'string',
+                'confirmed',
+                'min:8',             // must be at least 10 characters in length
+                'regex:/[a-z]/',      // must contain at least one lowercase letter
+                'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                'regex:/[0-9]/',      // must contain at least one digit
+                'regex:/[@$!.%*#?&]/', // must contain a special character
+            ],
+            // 'password' => 'required|string|min:6|confirmed',
+            //'password_confirmation' => 'required'
+        ]);
+
+        // Update the user's profile
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->phone = $request->input('phone');
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+
+        $user->save();
+
+        // Redirect back with a success message
+        return redirect()->back()->with('success', 'Profile updated successfully.');
+    }
+}
