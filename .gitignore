@@ -1,6 +1,5 @@
 /node_modules
 /public/hot
-/config/app.php
 /public/storage
 /public/pdf_documents
 /storage/*.key
