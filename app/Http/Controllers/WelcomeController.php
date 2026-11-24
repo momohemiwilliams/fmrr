@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
-
+// New changes for promotional 
 class WelcomeController extends Controller
 {
     public function index(Request $request)
