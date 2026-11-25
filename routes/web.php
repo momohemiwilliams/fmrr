@@ -275,6 +275,11 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
 Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
+    // Internal User Profile & Settings
+    Route::get('/admin/profile', [App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile');
+    Route::post('/admin/profile/update', [App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::post('/admin/profile/password', [App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('admin.profile.password');
+    
     // User management
     Route::resource('users', UserController::class);
     Route::post('/userstatus/{id}', [UserController::class, 'userstatus'])->name('userStatus');

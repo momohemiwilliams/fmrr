@@ -25,6 +25,10 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
+        if ($user && $user->usertype === 'internal') {
+            return redirect()->route('admin.profile');
+        }
+
         // Check if user has completed their profile
        // $profileComplete = !empty($user->name) && !empty($user->email) && !empty($user->phone);
         

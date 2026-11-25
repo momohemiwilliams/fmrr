@@ -4,47 +4,34 @@
     <div class="onb-bg">
         <div class="login-card">
             <div class="logo-container">
-                <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQlogo" />
+                <img src="{{ asset('public/users/assets/FMDQ-Logo.png') }}" alt="FMDQ Logo" />
             </div>
-            <div class="app-name-padding">
-                <p>Forgot Password?</p>
+            <div class="app-name" style="font-size: 20px; margin-bottom: 8px;">
+                Forgot Password?
             </div>
-            <p class="p-policy-center">
-                Enter the email address you used to create the account and we will
-                email you instructions to reset your password
+            <p class="auth-subtitle-modern">
+                Enter the email address associated with your account and we will email you instructions to reset your password.
             </p>
+
             <form method="POST" id="groupForm" action="{{ route('forgetpassword') }}">
                 @csrf
-                <div class="form__group field">
-                    <input type="email" class="form__field" placeholder="Email Address" name="email" id="email"
-                        required />
-                    <label for="name" class="form__label">Enter Your Email <span style="color: red">*</span></label>
-                </div>
-                {{-- <button type="submit">
-                    <div class="button-container m-60">
-                        <div class="gradient-buttons">
-                            <div class="gradient-button-content">
-                                <div>Send Email</div>
-                                <img src="{{ asset('public/users/assets//Arrow - Right.svg') }}" alt="Right Arrow" />
-                            </div>
-                        </div>
+                <div class="form-group-modern">
+                    <label for="email" class="form-label-modern">
+                        Enter Your Email <span class="req-star">*</span>
+                    </label>
+                    <div class="input-wrapper-modern">
+                        <input type="email" class="form-control-modern" placeholder="e.g. name@fmdqgroup.com" name="email" id="email" value="{{ old('email') }}" required autofocus />
                     </div>
-                </button> --}}
-
-                  <div class="auth-buttons-container">
-                    <button class="btn btn-lg btn-primary btn-block auth-buttons" id="addSubmitBtn" type="submit">
-                        <i class="fas fa-spinner fa-spin" style="display:none;"></i>
-                        <span class="btn-text">Send Email</span>
-                    </button>
                 </div>
 
-                {{-- <button class="btn btn-lg btn-primary btn-block" id="addSubmitBtn" type="submit">
+                <button class="auth-submit-btn btn" id="addSubmitBtn" type="submit" style="margin-top: 10px;">
                     <i class="fas fa-spinner fa-spin" style="display:none;"></i>
                     <span class="btn-text">Send Email</span>
-                </button> --}}
+                </button>
+
+                <p class="auth-footer-link">
+                    Remember Password? <a href="{{ route('login') }}">Login</a>
+                </p>
             </form>
-            <p class="remember-pass">
-                Remember Password?<a href="{{ route('login') }}"><span> Login</span></a>
-            </p>
         </div>
-    @endsection
+@endsection

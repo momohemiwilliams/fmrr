@@ -54,6 +54,9 @@
                                          <li>
 
 
+                                             <a class="dropdown-item" href="{{ route('admin.profile') }}"><em class="icon ni ni-user-alt"></em><span>Profile Settings</span></a>
+                                         </li>
+                                         <li>
                                              <a class="dropdown-item " href="javascript:void();"
                                                  onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><em
                                                      class="icon ni ni-signout"></em><span>Logout</span></a>
