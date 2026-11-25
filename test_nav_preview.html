@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navbar Comparison Preview</title>
+    <link href="public/users/style.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #0c2b70 0%, #1a3a8f 60%, #092055 100%);
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+        }
+
+        /* Profile Dropdown Styling */
+        .profile-dropdown-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .profile-dropdown-trigger {
+            cursor: pointer;
+            user-select: none;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 90px;
+            height: 48px;
+            padding: 0 18px;
+            background: linear-gradient(135deg, #0c2b70 0%, #17337f 100%);
+            border: 1.5px solid #d5a73b;
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            border-top-right-radius: 4px;
+            box-shadow: 0 2px 8px rgba(12, 43, 112, 0.2);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .profile-dropdown-trigger:hover,
+        .profile-dropdown-container.active .profile-dropdown-trigger {
+            background: linear-gradient(135deg, #103282 0%, #1d3c94 100%);
+            box-shadow: 0 4px 14px rgba(213, 167, 59, 0.35);
+            border-color: #f4d078;
+        }
+
+        .profile-initials-text {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        .profile-arrow-circle {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            border-radius: 50%;
+            border: 1.5px solid #d5a73b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+        }
+
+        .profile-dropdown-container:hover .profile-arrow-circle,
+        .profile-dropdown-container.active .profile-arrow-circle {
+            transform: rotate(180deg);
+            border-color: #f4d078;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h3 style="color: white; margin-bottom: 10px;">Full-height Signature Portal Button (48px height, 90px width):</h3>
+    <header class="header-container">
+        <div class="header">
+            <a href="#"><img src="public/users/assets/FMDQ-logo.png" alt="FMDQ Logo" /></a>
+            <ul>
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#">Rules &amp; Regulations</a></li>
+                <li><a href="#">Product and Market Documentation</a></li>
+                <li><a href="#">Others</a></li>
+                <li><a href="#">News</a></li>
+                <li><a href="#">Feedback</a></li>
+                <li><a href="#">User Manual</a></li>
+            </ul>
+
+            <div class="profile-dropdown-container" id="profileDropdownContainer">
+                <div class="profile-dropdown-trigger" id="profileDropdownTrigger" role="button" tabindex="0">
+                    <span class="profile-initials-text">RU</span>
+                    <span class="profile-arrow-circle">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d5a73b" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+</body>
+
+</html>
