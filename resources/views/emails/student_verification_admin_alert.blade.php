@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>New Student Research Application</title>
+    <title>New {{ $planName ?? 'Academic Subscription' }} Verification Application</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,600,700" rel="stylesheet" type="text/css">
     <style>
         html, body {
@@ -70,13 +70,17 @@
                                     Action Required
                                 </div>
                                 <h2 style="font-size: 20px; color: #002060; font-weight: 700; margin-bottom: 12px; line-height: 1.3;">
-                                    New Student Research Verification Application
+                                    New {{ $planName ?? 'Academic Subscription' }} Verification Application
                                 </h2>
                                 <p style="margin-bottom: 20px; color: #526484; font-size: 14px;">
                                     Dear Portal Administrator,
                                 </p>
                                 <p style="margin-bottom: 25px; color: #526484; font-size: 14px;">
-                                    A new application for complimentary <strong>Student Research Access (30 Days)</strong> has been submitted on the portal and requires compliance review and verification.
+                                    @if(!empty($isComplimentary))
+                                        A new onboarding and verification application for complimentary <strong>{{ $planName ?? 'Academic Subscription' }}</strong>@if(!empty($durationText)) ({{ $durationText }})@endif has been submitted on the portal and requires compliance review and verification.
+                                    @else
+                                        A new onboarding and verification application for <strong>{{ $planName ?? 'Academic Subscription' }}</strong>@if(!empty($subTierName) && $subTierName !== ($planName ?? '')) ({{ $subTierName }})@endif has been submitted on the portal and requires compliance review and verification.
+                                    @endif
                                 </p>
 
                                 <!-- Details Table -->
@@ -138,7 +142,7 @@
                                 </div>
 
                                 <p style="font-size: 12.5px; color: #8094ae; text-align: center; margin-top: 15px;">
-                                    You can approve or reject this request with notes directly from the Student Verification management console.
+                                    You can approve or reject this request with notes directly from the Academic &amp; Student Verification management console.
                                 </p>
                             </td>
                         </tr>

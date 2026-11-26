@@ -97,5 +97,6 @@
             });
         });
     </script>
+    @include('layouts.submit_spinner')
 </body>
 </html>

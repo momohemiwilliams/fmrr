@@ -645,5 +645,6 @@ Copyright © FMDQ Group PLC. All rights reserved.
             });
         });
     </script>
+    @include('layouts.submit_spinner')
 </body>
 </html>

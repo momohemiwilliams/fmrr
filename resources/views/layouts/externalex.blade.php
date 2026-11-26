@@ -175,3 +175,4 @@ Copyright © FMDQ Group PLC. All rights reserved.
                 @endif
             });
         </script>
+        @include('layouts.submit_spinner')

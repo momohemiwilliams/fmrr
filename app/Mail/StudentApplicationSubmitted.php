@@ -23,11 +23,25 @@ class StudentApplicationSubmitted extends Mailable
 
     public function build()
     {
+        $this->verification->loadMissing(['plan.subTier']);
+        $plan = $this->verification->plan;
+        $planName = optional($plan)->name ?? 'Academic Subscription';
+        $subTierName = optional(optional($plan)->subTier)->name ?? $planName;
+        $isComplimentary = $plan
+            ? ((float) ($plan->price ?? 0) <= 0 && (float) ($plan->price_usd ?? 0) <= 0)
+            : false;
+        $durationText = ($plan && !empty($plan->duration)) ? "{$plan->duration} Days" : null;
+
         return $this->view('emails.student_application_submitted')
-            ->subject('Student Research Access Application Received')
+            ->subject("{$planName} Application Received")
             ->with([
                 'verification' => $this->verification,
                 'student' => $this->student,
+                'plan' => $plan,
+                'planName' => $planName,
+                'subTierName' => $subTierName,
+                'isComplimentary' => $isComplimentary,
+                'durationText' => $durationText,
             ]);
     }
 }

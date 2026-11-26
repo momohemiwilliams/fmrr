@@ -192,5 +192,6 @@
         @endif
     });
 </script>
+@include('layouts.submit_spinner')
 
 </html>

@@ -96,6 +96,7 @@
             
 
       @include('layouts.sessioncheck')
+      @include('layouts.submit_spinner')
 
             <script>
                 function loading() {

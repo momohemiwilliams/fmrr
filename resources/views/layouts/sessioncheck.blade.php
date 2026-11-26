@@ -270,4 +270,5 @@
         startTimers();
     });
     </script>
+    @include('layouts.submit_spinner')
 

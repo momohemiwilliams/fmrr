@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Application Received - Student Research Access</title>
+    <title>Application Received - {{ $planName ?? 'Academic Subscription' }}</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,600,700" rel="stylesheet" type="text/css">
     <style>
         html, body {
@@ -44,7 +44,7 @@
                                     Financial Markets Regulations &amp; Rules Repository
                                 </h3>
                                 <p style="margin: 4px 0 0; font-size: 12px; color: #ad8e4f; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                                    Academic Grant Program
+                                    {{ !empty($isComplimentary) ? 'Academic Grant Program' : 'Academic Subscription Onboarding' }}
                                 </p>
                             </td>
                         </tr>
@@ -67,10 +67,14 @@
                                     Dear <strong>{{ $student->name }}</strong>,
                                 </p>
                                 <p style="margin-bottom: 20px; color: #526484; font-size: 14px;">
-                                    Thank you for applying for complimentary <strong>Student Research Access (30 Days)</strong> on the Financial Markets Regulations &amp; Rules Repository Portal.
+                                    @if (!empty($isComplimentary))
+                                        Thank you for applying for complimentary <strong>{{ $planName ?? 'Academic Subscription' }}</strong>@if(!empty($durationText)) ({{ $durationText }})@endif on the Financial Markets Regulations &amp; Rules Repository Portal.
+                                    @else
+                                        Thank you for submitting your onboarding and verification application for <strong>{{ $planName ?? 'Academic Subscription' }}</strong>@if(!empty($subTierName) && $subTierName !== ($planName ?? '')) ({{ $subTierName }})@endif on the Financial Markets Regulations &amp; Rules Repository Portal.
+                                    @endif
                                 </p>
                                 <p style="margin-bottom: 20px; color: #526484; font-size: 14px;">
-                                    We have received your uploaded proof of enrollment and application details. Our compliance team is currently reviewing your submission to verify your student status.
+                                    We have received your uploaded proof of academic affiliation and onboarding details. Our compliance team is currently reviewing your submission to verify your academic eligibility.
                                 </p>
 
                                 <!-- Summary Box -->
@@ -102,7 +106,11 @@
                                             </tr>
                                         @endif
                                         <tr>
-                                            <td style="color: #8094ae; padding: 4px 0;">Student ID / Matric:</td>
+                                            <td style="color: #8094ae; padding: 4px 0;">Target Plan:</td>
+                                            <td style="color: #1c2b46; font-weight: 600; padding: 4px 0;">{{ $planName ?? 'Academic Subscription' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #8094ae; padding: 4px 0;">Institutional / Student ID:</td>
                                             <td style="color: #1c2b46; font-weight: 600; padding: 4px 0;">{{ $verification->student_id_number ?? 'Not specified' }}</td>
                                         </tr>
                                         <tr>

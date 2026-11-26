@@ -340,6 +340,36 @@
         box-shadow: 0 12px 26px rgba(12, 43, 112, 0.38) !important;
     }
 
+    .apply-submit.is-loading,
+    .apply-submit:disabled {
+        opacity: 0.85 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        transform: none !important;
+        box-shadow: 0 4px 12px rgba(12, 43, 112, 0.2) !important;
+    }
+
+    .btn-apply-back.is-disabled {
+        pointer-events: none !important;
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+    }
+
+    .apply-form.is-submitting .form-group {
+        opacity: 0.72;
+        pointer-events: none !important;
+        user-select: none;
+    }
+
+    .apply-form.is-submitting input,
+    .apply-form.is-submitting select,
+    .apply-form.is-submitting .file-dropzone-box {
+        background-color: #f1f5f9 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
     /* Custom Alert */
     .custom-alert {
         border-radius: 14px;
@@ -355,7 +385,7 @@
 <div class="apply-container">
     <!-- Back to Subscriptions Navigation -->
     <div class="apply-nav-bar">
-        <a href="{{ url('subscribe') }}" class="btn-apply-back">
+        <a href="{{ url('subscribe') }}" id="applyBackBtn" class="btn-apply-back">
             <em class="icon ni ni-arrow-left"></em> Back to Subscription Plans
         </a>
     </div>
@@ -443,7 +473,7 @@
         </div>
 
         <!-- Application Form -->
-        <form class="apply-form" method="POST" action="{{ route('studentVerification.store') }}" enctype="multipart/form-data">
+        <form class="apply-form" id="applyOnboardingForm" method="POST" action="{{ route('studentVerification.store') }}" enctype="multipart/form-data">
             @csrf
 
             @if (isset($selectedPlan) && $selectedPlan)
@@ -587,8 +617,8 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="apply-submit">
-                <em class="icon ni ni-shield-check"></em> Complete Academic Onboarding &amp; Submit Verification
+            <button type="submit" id="applySubmitBtn" class="apply-submit">
+                <em class="icon ni ni-shield-check"></em> <span class="btn-text">Complete Academic Onboarding &amp; Submit Verification</span>
             </button>
         </form>
     </div>
@@ -683,6 +713,104 @@
                     dropzoneBox.style.borderColor = '';
                     dropzoneBox.style.backgroundColor = '';
                 }, false);
+            });
+        }
+
+        // Lock all interactive elements during Academic Onboarding submission
+        const onboardingForm = document.getElementById('applyOnboardingForm');
+        const submitBtn = document.getElementById('applySubmitBtn');
+        const backBtn = document.getElementById('applyBackBtn');
+        let originalSubmitHtml = submitBtn ? submitBtn.innerHTML : '';
+
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) {
+                if (this.classList.contains('is-disabled') || (onboardingForm && onboardingForm.dataset.submitting === 'true')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
+
+        if (onboardingForm && submitBtn) {
+            const blockWhileSubmitting = function(e) {
+                if (onboardingForm.dataset.submitting === 'true') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            };
+
+            onboardingForm.querySelectorAll('input, select, textarea').forEach(function(el) {
+                el.addEventListener('keydown', blockWhileSubmitting, true);
+                el.addEventListener('mousedown', blockWhileSubmitting, true);
+                el.addEventListener('change', blockWhileSubmitting, true);
+            });
+
+            if (dropzoneBox) {
+                dropzoneBox.addEventListener('click', blockWhileSubmitting, true);
+                dropzoneBox.addEventListener('drop', blockWhileSubmitting, true);
+            }
+
+            onboardingForm.addEventListener('submit', function(e) {
+                if (onboardingForm.dataset.submitting === 'true') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+
+                if (onboardingForm.checkValidity && !onboardingForm.checkValidity()) {
+                    return;
+                }
+
+                onboardingForm.dataset.submitting = 'true';
+                onboardingForm.classList.add('is-submitting');
+
+                // Prevent user edits without disabling inputs synchronously (disabled fields are omitted from POST)
+                onboardingForm.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(function(el) {
+                    if (el.tagName === 'INPUT' && el.type !== 'file') {
+                        el.readOnly = true;
+                    }
+                    el.setAttribute('aria-disabled', 'true');
+                    el.setAttribute('tabindex', '-1');
+                });
+
+                if (backBtn) {
+                    backBtn.classList.add('is-disabled');
+                    backBtn.setAttribute('aria-disabled', 'true');
+                    backBtn.setAttribute('tabindex', '-1');
+                }
+
+                submitBtn.dataset.isSubmitting = 'true';
+                submitBtn.classList.add('is-loading', 'submit-btn-spinning');
+                submitBtn.setAttribute('aria-busy', 'true');
+                submitBtn.innerHTML = '<span class="submit-btn-spinner" aria-hidden="true"></span><span>Submitting Verification...</span>';
+
+                setTimeout(function() {
+                    submitBtn.disabled = true;
+                }, 0);
+            });
+
+            window.addEventListener('pageshow', function() {
+                if (onboardingForm.dataset.submitting === 'true') {
+                    delete onboardingForm.dataset.submitting;
+                    onboardingForm.classList.remove('is-submitting');
+                    onboardingForm.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(function(el) {
+                        if (el.tagName === 'INPUT' && el.type !== 'file') {
+                            el.readOnly = false;
+                        }
+                        el.removeAttribute('aria-disabled');
+                        el.removeAttribute('tabindex');
+                    });
+                    if (backBtn) {
+                        backBtn.classList.remove('is-disabled');
+                        backBtn.removeAttribute('aria-disabled');
+                        backBtn.removeAttribute('tabindex');
+                    }
+                    submitBtn.disabled = false;
+                    delete submitBtn.dataset.isSubmitting;
+                    submitBtn.classList.remove('is-loading', 'submit-btn-spinning');
+                    submitBtn.removeAttribute('aria-busy');
+                    submitBtn.innerHTML = originalSubmitHtml;
+                }
             });
         }
     });

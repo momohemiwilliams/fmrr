@@ -187,6 +187,7 @@ Copyright © FMDQ Group PLC. All rights reserved.
     </script>
 
     @include('layouts.sessioncheck')
+    @include('layouts.submit_spinner')
 
 </body>
 
