@@ -15,45 +15,60 @@
     </div>
 
     </section>
-    <section style="background: #e8eaf0 !important;" class="gd-main-container">
-        <div class="hd-container">
-            <div class="gl-flex">
-                <div class="tabs">
+    <section style="background: #f1f5f9 !important; padding: 36px 20px 64px;" class="gd-main-container">
+        <style>
+            .fmdq-search-page-wrap {
+                max-width: 1160px;
+                width: 100%;
+                margin: 0 auto;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: 44px;
+            }
+            .fmdq-search-form-col {
+                flex: 1 1 540px;
+                max-width: 640px;
+                width: 100%;
+            }
+            .fmdq-search-empty-col {
+                flex: 0 1 360px;
+                display: flex;
+                justify-content: center;
+            }
+            .adv-search-empty {
+                text-align: center;
+                padding: 20px;
+            }
+            .adv-search-empty .no-doc {
+                color: #0c2b70 !important;
+                font-size: 20px !important;
+                font-weight: 700 !important;
+                margin-top: 14px;
+                margin-bottom: 6px;
+            }
+            .adv-search-empty .get-in {
+                color: #64748b !important;
+                font-size: 14px !important;
+            }
+        </style>
 
-
-
-
-                </div>
-
-
+        <div class="fmdq-search-page-wrap">
+            <div class="fmdq-search-form-col">
+                @include('search.searchTbale')
             </div>
-        </div>
 
-
-
-
-        <div class="gda-cards-container">
-            @include('search.searchTbale')
-
-
-
-
-            <div class="">
-
+            <div class="fmdq-search-empty-col">
                 <div class="adv-search-empty">
-                    <br>
-                    <br>
-                    <br>
                     <img src="{{ asset('public/users/assets/illustration-search.svg') }}" alt="search illustration"
-                        height="280px">
-                    <div class="no-doc" style="text-align: center">No Results to Show</div>
-                    <div class="get-in" style="text-align: center">
+                        height="250px">
+                    <div class="no-doc">No Results to Show</div>
+                    <div class="get-in">
                         Enter a query to see results here
                     </div>
                 </div>
             </div>
-
-
         </div>
     </section>
 

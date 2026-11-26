@@ -16,45 +16,57 @@
 .np-content {
     flex: 1;
     min-width: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 30px 34px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
 }
 
 .np-flex {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 24px;
+    gap: 20px;
+    padding-bottom: 18px;
     margin-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .n {
     font-family: straightBold, sans-serif;
-    font-size: 24px;
+    font-size: 23px;
     line-height: 1.35;
-    color: #1d326d;
+    color: #0c2b70;
     flex: 1;
     margin: 0;
 }
 
 .d {
-    color: #969698;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 5px 12px;
     font-family: customRegular, sans-serif;
-    font-size: 13px;
+    font-size: 12.5px;
+    font-weight: 500;
     white-space: nowrap;
     flex-shrink: 0;
-    margin-top: 6px;
+    margin-top: 2px;
 }
 
 .np-p {
     font-family: customRegular, sans-serif;
     font-size: 15.5px;
     line-height: 1.75;
-    color: #333333;
+    color: #334155;
     text-align: justify;
 }
 
 /* Sidebar: Other News */
 .other-news {
-    width: 290px;
+    width: 310px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -62,26 +74,24 @@
 
 .otn {
     font-family: straightBold, sans-serif;
-    font-size: 20px;
-    color: #1d326d;
+    font-size: 19px;
+    color: #0c2b70;
     margin-bottom: 14px;
     line-height: 1.2;
 }
 
 /* The Blue Box */
 .other-news-box {
-    background-color: #1d326d !important;
-    border-top-left-radius: 16px;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-    border-top-right-radius: 0px;
+    background-color: #0c2b70 !important;
+    border-radius: 14px;
+    border-top: 3px solid #C79D51;
     padding: 22px 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     width: 100%;
     box-sizing: border-box;
-    box-shadow: 0 4px 16px rgba(29, 50, 109, 0.12);
+    box-shadow: 0 6px 20px rgba(12, 43, 112, 0.14);
 }
 
 .other-news-item {

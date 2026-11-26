@@ -1,6 +1,280 @@
 <style>
+  .glass-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 26px 28px !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    box-sizing: border-box !important;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .glass-container .nav-tabs {
+    background: #f1f5f9 !important;
+    border-radius: 10px !important;
+    padding: 4px !important;
+    border: none !important;
+    display: inline-flex !important;
+    gap: 4px;
+    margin-bottom: 20px !important;
+  }
+
+  .glass-container .nav-tabs > li {
+    margin: 0 !important;
+    float: none !important;
+  }
+
+  .glass-container .nav-tabs > li > a {
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    background: transparent !important;
+    margin: 0 !important;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .nav-tabs > li.active > a,
+  .glass-container .nav-tabs > li.active > a:hover,
+  .glass-container .nav-tabs > li.active > a:focus {
+    background: #0c2b70 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(12, 43, 112, 0.2);
+  }
+
+  .glass-container .search-filters {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .glass-container .sf-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0c2b70 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .glass-container .cb-gap {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .glass-container .catgory {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 7px 12px;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .catgory:hover {
+    border-color: #0c2b70;
+    background: #f1f5f9;
+  }
+
+  .glass-container .catgory:has(input:checked) {
+    background: #eff6ff !important;
+    border-color: #0c2b70 !important;
+    box-shadow: 0 0 0 1px #0c2b70 !important;
+  }
+
+  .glass-container .catgory input[type="radio"]:checked + label,
+  .glass-container .catgory input[type="checkbox"]:checked + label {
+    color: #0c2b70 !important;
+    font-weight: 700 !important;
+  }
+
+  .glass-container .catgory input[type="radio"],
+  .glass-container .catgory input[type="checkbox"] {
+    display: inline-block !important;
+    visibility: visible !important;
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    accent-color: #0c2b70 !important;
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    cursor: pointer;
+    position: static !important;
+    opacity: 1 !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .glass-container .catgory label {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    cursor: pointer;
+  }
+
+  .glass-container .search-input {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px 16px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+  }
+
+  .glass-container .search-input.is-single {
+    grid-template-columns: 1fr !important;
+  }
+
+  .glass-container .w-85,
+  .glass-container .w-33,
+  .glass-container .w-50 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .glass-container .si-title {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin: 0 0 6px 0 !important;
+  }
+
+  .glass-container .si-input-box,
+  .glass-container .si-input-box-s {
+    width: 100% !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 13.5px !important;
+    box-sizing: border-box !important;
+    float: none !important;
+    margin: 0 !important;
+    outline: none !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .glass-container .si-input-box:focus,
+  .glass-container .si-input-box-s:focus {
+    border-color: #0c2b70 !important;
+    box-shadow: 0 0 0 3px rgba(12, 43, 112, 0.1) !important;
+  }
+
+  .glass-container .autocomplete-wrapper {
+    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .glass-container .autocomplete-wrapper .si-input-box-s {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .glass-container .dropdown-btn {
+    width: 34px !important;
+    height: 40px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: none !important;
+    border-radius: 0 8px 8px 0 !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    cursor: pointer;
+    flex-shrink: 0;
+    float: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  .glass-container .dropdown-btn:hover {
+    background: #e2e8f0 !important;
+    color: #0c2b70 !important;
+  }
+
+  .glass-container .btn-flex {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    margin-top: 22px !important;
+  }
+
+  .fmdq-search-btn-clear {
+    height: 42px;
+    padding: 0 20px;
+    border-radius: 9px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .fmdq-search-btn-clear:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+
+  .fmdq-search-btn-submit {
+    height: 42px;
+    padding: 0 24px;
+    border-radius: 9px;
+    border: 1px solid #0c2b70;
+    background: #0c2b70;
+    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(12, 43, 112, 0.2);
+    transition: all 0.15s ease;
+  }
+
+  .fmdq-search-btn-submit:hover {
+    background: #091f52;
+    border-color: #091f52;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 600px) {
+    .glass-container .search-input {
+      grid-template-columns: 1fr !important;
+    }
+    .glass-container .btn-flex {
+      flex-direction: column-reverse;
+    }
+    .fmdq-search-btn-clear,
+    .fmdq-search-btn-submit {
+      width: 100%;
+    }
+  }
+
   .autocomplete-box {
-    border: 1px solid #ccc;
+    border: 1px solid #e2e8f0;
     max-height: 200px;
     overflow-y: auto;
     display: none;
@@ -104,11 +378,11 @@ entityBox.addEventListener("click", function (e) {
             </div>
         </div>
 
-        <div class="search-input">
+        <div class="search-input is-single">
             <div class="w-85">
                 <div class="si-title">Search for <span class="starrr" style="color: red;">*</span></div>
                 <input class="si-input-box" type="text" name="Key_Words"
-                    placeholder="Enter words" required />
+                    placeholder="Enter keywords to search..." required />
             </div>
             <div class="w-50" style="display: none">
                 <div class="si-title">Search In</div>
@@ -122,22 +396,13 @@ entityBox.addEventListener("click", function (e) {
         <input name="Form" value="Basic" hidden>
 
         <div class="btn-flex">
-            <div class="gradient-buttons">
-                <button type="button" onclick="clearForm()">
-                    <div class="gradient-button-content-white">
-                        <div>Clear Fields</div>
-                        <img src="{{ asset('public/users/assets/Close.svg') }}" alt="Clear Fields" />
-                    </div>
-                </button>
-            </div>
-            <div class="gradient-buttons">
-                <button type="submit">
-                    <div class="gradient-button-content">
-                        <div>Search</div>
-                        <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}" alt="Search" />
-                    </div>
-                </button>
-            </div>
+            <button type="button" class="fmdq-search-btn-clear" onclick="clearForm()">
+                <span>Clear Fields</span>
+            </button>
+            <button type="submit" class="fmdq-search-btn-submit">
+                <span>Search</span>
+                <span>&rarr;</span>
+            </button>
         </div>
     </div>
 </form>
@@ -145,18 +410,9 @@ entityBox.addEventListener("click", function (e) {
 <script>
     function clearForm() {
         const form = document.getElementById('searchForm');
-
-        // Clear all text inputs
-        form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
-
-        // Uncheck all checkboxes
-        form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
-
-        // Reset all selects
+        form.querySelectorAll('input[type="text"], input[type="date"]').forEach(input => input.value = '');
+        form.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => el.checked = false);
         form.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-
-        // Optional: reset hidden input if needed
-        // form.querySelectorAll('input[type="hidden"]').forEach(hidden => hidden.value = '');
     }
 </script>
 
@@ -347,24 +603,13 @@ entityBox.addEventListener("click", function (e) {
                                     </div>
                                     <input name="Form" value="Advanced" hidden>
                                     <div class="btn-flex">
-                                        <div class="gradient-buttons">
-                                            <button type="button" onclick="clearForm()">
-                                                <div class="gradient-button-content-white">
-                                                    <div>Clear Fields</div>
-                                                    <img src="{{ asset('public/users/assets/Close.svg') }}"
-                                                        alt="Right Arrow" />
-                                                </div>
-                                            </button>
-                                        </div>
-                                        <div class="gradient-buttons">
-                                            <button type="submit">
-                                                <div class="gradient-button-content">
-                                                    <div>Search</div>
-                                                    <img src="{{ asset('public/users/assets/Arrow - Right.svg') }}"
-                                                        alt="Search" />
-                                                </div>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="fmdq-search-btn-clear" onclick="SearchTable.clearForm()">
+                                            <span>Clear Fields</span>
+                                        </button>
+                                        <button type="submit" class="fmdq-search-btn-submit">
+                                            <span>Search</span>
+                                            <span>&rarr;</span>
+                                        </button>
                                     </div>
                             </div>
 
@@ -377,11 +622,11 @@ entityBox.addEventListener("click", function (e) {
     SearchTable.clearForm = function() {
         const form = document.getElementById('searchFormADFD');
 
-        // Clear all text inputs
-        form.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+        // Clear all text & date inputs
+        form.querySelectorAll('input[type="text"], input[type="date"]').forEach(input => input.value = '');
 
-        // Uncheck all checkboxes
-        form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+        // Uncheck all checkboxes & radios
+        form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(checkbox => checkbox.checked = false);
 
         // Reset all selects
         form.querySelectorAll('select').forEach(select => select.selectedIndex = 0);

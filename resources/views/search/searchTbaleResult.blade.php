@@ -1,3 +1,292 @@
+<style>
+  .glass-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 24px 28px !important;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 24px !important;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .glass-container .nav-tabs {
+    background: #f1f5f9 !important;
+    border-radius: 10px !important;
+    padding: 4px !important;
+    border: none !important;
+    display: inline-flex !important;
+    gap: 6px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .glass-container .nav-tabs > li {
+    margin: 0 !important;
+    float: none !important;
+  }
+
+  .glass-container .nav-tabs > li > a {
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    background: transparent !important;
+    margin: 0 !important;
+    display: block !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .nav-tabs > li.active > a,
+  .glass-container .nav-tabs > li.active > a:hover,
+  .glass-container .nav-tabs > li.active > a:focus {
+    background: #0c2b70 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(12, 43, 112, 0.2);
+  }
+
+  .glass-container .search-filters {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .glass-container .sf-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0c2b70 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .glass-container .cb-gap {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .glass-container .catgory,
+  .glass-container .cb-gap .custom-control {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .catgory:hover,
+  .glass-container .cb-gap .custom-control:hover {
+    border-color: #0c2b70 !important;
+    background: #f1f5f9 !important;
+  }
+
+  .glass-container .catgory:has(input:checked),
+  .glass-container .cb-gap .custom-control:has(input:checked) {
+    background: #eff6ff !important;
+    border-color: #0c2b70 !important;
+    box-shadow: 0 0 0 1px #0c2b70 !important;
+  }
+
+  .glass-container .catgory input:checked + label,
+  .glass-container .cb-gap .custom-control-input:checked + .custom-control-label {
+    color: #0c2b70 !important;
+    font-weight: 700 !important;
+  }
+
+  .glass-container .catgory input[type="radio"],
+  .glass-container .catgory input[type="checkbox"],
+  .glass-container .cb-gap .custom-control-input {
+    display: inline-block !important;
+    visibility: visible !important;
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    accent-color: #0c2b70 !important;
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    position: static !important;
+    opacity: 1 !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+
+  .glass-container .catgory label,
+  .glass-container .cb-gap .custom-control-label {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    cursor: pointer;
+  }
+
+  .glass-container .cb-gap .custom-control-label::before,
+  .glass-container .cb-gap .custom-control-label::after {
+    display: none !important;
+  }
+
+  .glass-container .search-input {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+    gap: 16px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+  }
+
+  .glass-container .w-85,
+  .glass-container .w-33,
+  .glass-container .w-50 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .glass-container .si-title {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin: 0 0 6px 0 !important;
+  }
+
+  .glass-container .si-input-box,
+  .glass-container .si-input-box-s {
+    width: 100% !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 13.5px !important;
+    box-sizing: border-box !important;
+    float: none !important;
+    margin: 0 !important;
+    outline: none !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .glass-container .si-input-box:focus,
+  .glass-container .si-input-box-s:focus {
+    border-color: #0c2b70 !important;
+    box-shadow: 0 0 0 3px rgba(12, 43, 112, 0.1) !important;
+  }
+
+  .glass-container .autocomplete-wrapper {
+    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .glass-container .autocomplete-wrapper .si-input-box-s {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .glass-container .dropdown-btn {
+    width: 34px !important;
+    height: 40px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: none !important;
+    border-radius: 0 8px 8px 0 !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    cursor: pointer;
+    flex-shrink: 0;
+    float: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  .glass-container .btn-flex {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    margin-top: 20px !important;
+    width: 100% !important;
+  }
+
+  .glass-container .btn-flex .gradient-buttons {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+  }
+
+  .glass-container .btn-flex .gradient-buttons button {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    cursor: pointer;
+  }
+
+  .glass-container .btn-flex .gradient-button-content-white {
+    height: 42px !important;
+    padding: 0 20px !important;
+    border-radius: 9px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: auto !important;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .btn-flex .gradient-button-content-white:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+  }
+
+  .glass-container .btn-flex .gradient-button-content {
+    height: 42px !important;
+    padding: 0 24px !important;
+    border-radius: 9px !important;
+    border: 1px solid #0c2b70 !important;
+    background: #0c2b70 !important;
+    color: #ffffff !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: auto !important;
+    box-shadow: 0 2px 8px rgba(12, 43, 112, 0.2) !important;
+    transition: all 0.15s ease;
+  }
+
+  .glass-container .btn-flex .gradient-button-content:hover {
+    background: #091f52 !important;
+    border-color: #091f52 !important;
+    transform: translateY(-1px);
+  }
+</style>
+
 <div class="glass-container">
 
     @if (Auth::check())

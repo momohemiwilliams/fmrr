@@ -10,202 +10,201 @@
             <div class="container-fluid">
                 <div class="nk-content-inner">
                     <div class="nk-content-body">
+<style>
+    .fmdq-dash-card {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .fmdq-dash-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(12, 43, 112, 0.08) !important;
+    }
+    .fmdq-kpi-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .fmdq-kpi-navy { background: #eff6ff; color: #0c2b70; }
+    .fmdq-kpi-gold { background: #fef9ec; color: #b5892e; }
+    .fmdq-kpi-teal { background: #ecfdf5; color: #047857; }
+    .fmdq-kpi-amber { background: #fffbeb; color: #b45309; }
+    .fmdq-preset-btn {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        padding: 5px 12px !important;
+        border-radius: 999px !important;
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        color: #334155 !important;
+        text-decoration: none !important;
+        transition: all 0.15s ease;
+    }
+    .fmdq-preset-btn:hover {
+        border-color: #0c2b70 !important;
+        color: #0c2b70 !important;
+        background: #f8fafc !important;
+    }
+</style>
                         <div class="nk-block-head nk-block-head-sm">
                             <div class="nk-block-between">
                                 <div class="nk-block-head-content">
-                                    <h3 class="nk-block-title page-title">Dashboard</h3>
-                                </div><!-- .nk-block-head-content -->
-                                <div class="nk-block-head-content">
-                                    <div class="toggle-wrap nk-block-tools-toggle">
-                                        <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
-                                            data-target="pageMenu"><em class="icon ni ni-more-v"></em></a>
-
+                                    <h3 class="nk-block-title page-title" style="color: #0c2b70;">Dashboard</h3>
+                                    <div class="nk-block-des text-soft">
+                                        <p>Repository overview, download analytics, and pending approvals.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
+                                <div class="nk-block-head-content">
+                                    <span class="badge badge-pill" style="background: #eff6ff; color: #0c2b70; border: 1px solid #bfdbfe; padding: 6px 12px; font-size: 12px;">
+                                        {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}
+                                    </span>
+                                </div><!-- .nk-block-head-content -->
                             </div><!-- .nk-block-between -->
-                            
-                            <!-- Date Range Filter -->
-                           
                         </div><!-- .nk-block-head -->
+
+                        <!-- Date Range Filter & Quick Presets -->
+                        <div class="card card-bordered fmdq-dash-card mb-4">
+                            <div class="card-inner py-3">
+                                <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-end flex-wrap" style="gap: 12px;">
+                                    <div class="form-group mb-0">
+                                        <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: #475569;">Start Date</label>
+                                        <div class="form-control-wrap">
+                                            <input type="date" class="form-control form-control-sm" name="start_date" value="{{ $selectedStartDate }}" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label mb-1" style="font-size: 12px; font-weight: 600; color: #475569;">End Date</label>
+                                        <div class="form-control-wrap">
+                                            <input type="date" class="form-control form-control-sm" name="end_date" value="{{ $selectedEndDate }}" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <button type="submit" class="btn btn-sm" style="background: #0c2b70; color: #fff; border-color: #0c2b70;">
+                                            <em class="icon ni ni-filter"></em><span>Apply</span>
+                                        </button>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                            <em class="icon ni ni-reload"></em><span>Reset</span>
+                                        </a>
+                                    </div>
+                                    <div class="d-flex align-items-center flex-wrap ml-auto" style="gap: 6px;">
+                                        <a class="fmdq-preset-btn" href="{{ route('dashboard', ['start_date' => now()->subDays(7)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}">7 Days</a>
+                                        <a class="fmdq-preset-btn" href="{{ route('dashboard', ['start_date' => now()->subDays(30)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}">30 Days</a>
+                                        <a class="fmdq-preset-btn" href="{{ route('dashboard', ['start_date' => now()->subWeeks(12)->startOfWeek()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}">12 Weeks</a>
+                                        <a class="fmdq-preset-btn" href="{{ route('dashboard', ['start_date' => now()->startOfYear()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')]) }}">This Year</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                         <div class="nk-block">
                             <div class="row g-gs">
-
-                                <div class="col-md-4">
-                                    <div class="card card-bordered card-full">
+                                <div class="col-md-3 col-sm-6">
+                                    <div class="card card-bordered fmdq-dash-card card-full">
                                         <div class="card-inner">
-                                            <div class="card-title-group align-start mb-0">
+                                            <div class="card-title-group align-start mb-2">
                                                 <div class="card-title">
-                                                    <h6 class="title">Category Count</h6>
+                                                    <h6 class="title" style="color: #475569;">Categories</h6>
                                                 </div>
-                                                <div class="card-tools">
-                                                    <em class="card-hint icon ni ni-help-fill" data-toggle="tooltip"
-                                                        data-placement="left"></em>
-                                                </div>
+                                                <span class="fmdq-kpi-icon fmdq-kpi-navy"><em class="icon ni ni-folder"></em></span>
                                             </div>
-                                            <div class="card-amount">
-                                                <span class="amount"> {{ $all_categories }} </span>
-
+                                            <div class="card-amount mb-2">
+                                                <span class="amount" style="color: #0c2b70;">{{ $all_categories }}</span>
                                             </div>
-                                            <div class="invest-data">
-                                                <div class="invest-data-amount g-2">
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Active</div>
-                                                        <div class="amount">{{ $active_categories }}</div>
-                                                    </div>
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Inactive</div>
-                                                        <div class="amount">{{ $inactive_categories }}</div>
-                                                    </div>
-                                                </div>
-                                                <div class="invest-data-ck">
-                                                    <canvas class="iv-data-chart" id="totalBooking"></canvas>
-                                                </div>
+                                            <div class="d-flex justify-content-between text-soft" style="font-size: 12px;">
+                                                <span>Active: <strong class="text-success">{{ $active_categories }}</strong></span>
+                                                <span>Inactive: <strong class="text-danger">{{ $inactive_categories }}</strong></span>
                                             </div>
                                         </div>
-                                    </div><!-- .card -->
+                                    </div>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <div class="card card-bordered card-full">
+                                <div class="col-md-3 col-sm-6">
+                                    <div class="card card-bordered fmdq-dash-card card-full">
                                         <div class="card-inner">
-                                            <div class="card-title-group align-start mb-0">
+                                            <div class="card-title-group align-start mb-2">
                                                 <div class="card-title">
-                                                    <h6 class="title">Sub-category
-                                                        Count</h6>
+                                                    <h6 class="title" style="color: #475569;">Sub-categories</h6>
                                                 </div>
-                                                <div class="card-tools">
-                                                    <em class="card-hint icon ni ni-help-fill" data-toggle="tooltip"
-                                                        data-placement="left"></em>
-                                                </div>
+                                                <span class="fmdq-kpi-icon fmdq-kpi-gold"><em class="icon ni ni-layers"></em></span>
                                             </div>
-                                            {{-- 'all_sub_ctaegories', 'active_sub_categories', 'inactive_sub_categories' --}}
-                                            <div class="card-amount">
-                                                <span class="amount"> {{ $all_sub_categories }} </span>
-
+                                            <div class="card-amount mb-2">
+                                                <span class="amount" style="color: #0c2b70;">{{ $all_sub_categories }}</span>
                                             </div>
-                                            <div class="invest-data">
-                                                <div class="invest-data-amount g-2">
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Active</div>
-                                                        <div class="amount">{{ $active_sub_categories }}</div>
-                                                    </div>
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Inactive</div>
-                                                        <div class="amount">{{ $inactive_sub_categories }}</div>
-                                                    </div>
-                                                </div>
-                                                <div class="invest-data-ck">
-                                                    <canvas class="iv-data-chart" id="totalBooking"></canvas>
-                                                </div>
+                                            <div class="d-flex justify-content-between text-soft" style="font-size: 12px;">
+                                                <span>Active: <strong class="text-success">{{ $active_sub_categories }}</strong></span>
+                                                <span>Inactive: <strong class="text-danger">{{ $inactive_sub_categories }}</strong></span>
                                             </div>
                                         </div>
-                                    </div><!-- .card -->
+                                    </div>
                                 </div>
 
-
-
-                                <div class="col-md-4">
-                                    <div class="card card-bordered card-full">
+                                <div class="col-md-3 col-sm-6">
+                                    <div class="card card-bordered fmdq-dash-card card-full">
                                         <div class="card-inner">
-                                            <div class="card-title-group align-start mb-0">
+                                            <div class="card-title-group align-start mb-2">
                                                 <div class="card-title">
-                                                    <h6 class="title">Documents
-                                                        Count</h6>
+                                                    <h6 class="title" style="color: #475569;">Documents</h6>
                                                 </div>
-                                                <div class="card-tools">
-                                                    <em class="card-hint icon ni ni-help-fill" data-toggle="tooltip"
-                                                        data-placement="left"></em>
-                                                </div>
+                                                <span class="fmdq-kpi-icon fmdq-kpi-teal"><em class="icon ni ni-file-docs"></em></span>
                                             </div>
-                                            <div class="card-amount">
-                                                <span class="amount">{{ $all_documents }}</span>
-
+                                            <div class="card-amount mb-2">
+                                                <span class="amount" style="color: #0c2b70;">{{ $all_documents }}</span>
                                             </div>
-                                            <div class="invest-data">
-                                                <div class="invest-data-amount g-2">
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Active</div>
-                                                        <div class="amount">{{ $active_documents }}</div>
-                                                    </div>
-                                                    <div class="invest-data-history">
-                                                        <div class="title">Inactive</div>
-                                                        <div class="amount">{{ $inactive_documents }}</div>
-                                                    </div>
-                                                </div>
-                                                <div class="invest-data-ck">
-                                                    <canvas class="iv-data-chart" id="totalBooking"></canvas>
-                                                </div>
+                                            <div class="d-flex justify-content-between text-soft" style="font-size: 12px;">
+                                                <span>Active: <strong class="text-success">{{ $active_documents }}</strong></span>
+                                                <span>Inactive: <strong class="text-danger">{{ $inactive_documents }}</strong></span>
                                             </div>
                                         </div>
-                                    </div><!-- .card -->
+                                    </div>
                                 </div>
 
-
-
-
-
-
-
-                            </div>
-
- <div class="card card-bordered mt-3 mb-2">
-                                <div class="card-inner py-3">
-                                    <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-end flex-wrap" style="gap: 15px;">
-                                        <div class="form-group mb-0">
-                                            <label class="form-label" style="font-size: 13px;">Start Date</label>
-                                            <div class="form-control-wrap">
-                                                <input type="date" class="form-control form-control-sm" name="start_date" value="{{ $selectedStartDate }}" />
+                                <div class="col-md-3 col-sm-6">
+                                    <div class="card card-bordered fmdq-dash-card card-full">
+                                        <div class="card-inner">
+                                            <div class="card-title-group align-start mb-2">
+                                                <div class="card-title">
+                                                    <h6 class="title" style="color: #475569;">Period Downloads</h6>
+                                                </div>
+                                                <span class="fmdq-kpi-icon fmdq-kpi-amber"><em class="icon ni ni-download-cloud"></em></span>
+                                            </div>
+                                            <div class="card-amount mb-2">
+                                                <span class="amount" style="color: #0c2b70;">{{ number_format($periodDownloadsTotal) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between text-soft" style="font-size: 12px;">
+                                                <span>Pending Queue: <strong style="color: #b45309;">{{ $pendingApprovalsCount }}</strong></span>
+                                                <span>Top Docs: <strong>{{ $DownloadStats->count() }}</strong></span>
                                             </div>
                                         </div>
-                                        <div class="form-group mb-0">
-                                            <label class="form-label" style="font-size: 13px;">End Date</label>
-                                            <div class="form-control-wrap">
-                                                <input type="date" class="form-control form-control-sm" name="end_date" value="{{ $selectedEndDate }}" />
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <em class="icon ni ni-filter"></em><span>Filter</span>
-                                            </button>
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                                                <em class="icon ni ni-reload"></em><span>Reset</span>
-                                            </a>
-                                        </div>
-                                        <div class="form-group mb-0 ml-auto">
-                                            <span class="badge badge-light" style="font-size: 12px;">
-                                                Showing: {{ \Carbon\Carbon::parse($selectedStartDate)->format('M d, Y') }} — {{ \Carbon\Carbon::parse($selectedEndDate)->format('M d, Y') }}
-                                            </span>
-                                        </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
 
-                             <div class="row g-gs">
+                             <div class="row g-gs mt-1">
 
                                 <div class="col-md-12">
-                                    <div class="card card-bordered">
+                                    <div class="card card-bordered fmdq-dash-card">
                                         <div class="card-inner">
                                             <div class="card-title-group mb-3">
                                                 <div class="card-title">
-                                                    <h6 class="title"> Document Downloads</h6>
-                                                    <p>Frequency of documents downloaded by users</p>
+                                                    <h6 class="title" style="color: #0c2b70;">Document Downloads Analytics</h6>
+                                                    <p class="text-soft">Top 10 downloaded documents alongside weekly download trend</p>
                                                 </div>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div style="position: relative; height: 400px;">
+                                            <div class="row g-gs">
+                                                <div class="col-lg-7">
+                                                    <div style="position: relative; height: 340px;">
                                                         <canvas id="weeklyDownloadsBarChart"></canvas>
                                                     </div>
                                                 </div>
-                                               
-                                                <div class="col-md-12">
-                                                     <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                    <div style="position: relative; height: 400px;">
+                                                <div class="col-lg-5">
+                                                    <div style="position: relative; height: 340px;">
                                                         <canvas id="weeklyDownloadsLineChart"></canvas>
                                                     </div>
                                                 </div>
@@ -3192,11 +3191,11 @@
                             datasets: [{
                                 label: 'Total Downloads',
                                 data: weeklyTotalData.data,
-                                borderColor: '#4e73df',
-                                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                                borderColor: '#0c2b70',
+                                backgroundColor: 'rgba(12, 43, 112, 0.08)',
                                 borderWidth: 2,
-                                pointBackgroundColor: '#4e73df',
-                                pointBorderColor: '#fff',
+                                pointBackgroundColor: '#C79D51',
+                                pointBorderColor: '#0c2b70',
                                 pointBorderWidth: 2,
                                 pointRadius: 4,
                                 pointHoverRadius: 6,

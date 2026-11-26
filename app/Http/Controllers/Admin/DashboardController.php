@@ -62,12 +62,13 @@ class DashboardController extends Controller
             $query->whereBetween('created_at', [$startDate, $endDate]);
         }])->get();
 
-        // Prepare data for the chart
+        // Prepare data for the chart with cohesive FMDQ palette
+        $fmdqPalette = ['#0c2b70', '#C79D51', '#1d4ed8', '#0f766e', '#475569', '#6366f1', '#b45309', '#0284c7'];
         $chartData = [
             'labels' => $categories->pluck('name')->toArray(),
             'data' => $categories->pluck('documents_count')->toArray(),
-            'colors' => $categories->map(function ($category) {
-                return '#' . substr(md5(rand()), 0, 6);
+            'colors' => $categories->values()->map(function ($category, $idx) use ($fmdqPalette) {
+                return $fmdqPalette[$idx % count($fmdqPalette)];
             })->toArray()
         ];
 
@@ -135,7 +136,7 @@ class DashboardController extends Controller
         }
 
         // Build datasets per top document
-        $chartColors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9', '#17a673', '#fd7e14'];
+        $chartColors = ['#0c2b70', '#C79D51', '#1d4ed8', '#0d9488', '#6366f1', '#d97706', '#334155', '#0284c7', '#059669', '#64748b'];
         $weeklyDownloadDatasets = [];
         $topDocTitles = Regulation::whereIn('id', $topDocIds)->pluck('title', 'id');
 
@@ -185,6 +186,16 @@ class DashboardController extends Controller
         $selectedStartDate = $startDate->format('Y-m-d');
         $selectedEndDate = $endDate->format('Y-m-d');
 
-        return view('admin.dashboard', compact('all_categories', 'active_categories', 'inactive_categories', 'all_sub_categories', 'active_sub_categories', 'inactive_sub_categories', 'all_documents', 'active_documents', 'inactive_documents', 'chartData', 'DownloadStats', 'data', 'regulations', 'categories', 'subcategories', 'entities', 'news_alert', 'users', 'roles', 'groups', 'user_groups', 'weeklyDownloadChartData', 'weeklyTotalChartData', 'selectedStartDate', 'selectedEndDate'));
+        $periodDownloadsTotal = $DownloadStats->sum('total');
+        $pendingApprovalsCount = $regulations->count()
+            + $categories->count()
+            + $subcategories->count()
+            + $entities->count()
+            + $news_alert->count()
+            + $users->count()
+            + $roles->count()
+            + $groups->count();
+
+        return view('admin.dashboard', compact('all_categories', 'active_categories', 'inactive_categories', 'all_sub_categories', 'active_sub_categories', 'inactive_sub_categories', 'all_documents', 'active_documents', 'inactive_documents', 'chartData', 'DownloadStats', 'data', 'regulations', 'categories', 'subcategories', 'entities', 'news_alert', 'users', 'roles', 'groups', 'user_groups', 'weeklyDownloadChartData', 'weeklyTotalChartData', 'selectedStartDate', 'selectedEndDate', 'periodDownloadsTotal', 'pendingApprovalsCount'));
     }
 }
