@@ -301,7 +301,13 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('/permissionstatus/{id}', [PermissionController::class, 'permissionstatus'])->name('permissionstatus');
 
     // Category management
-    Route::resource('categories', CategoryController::class);
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::match(['put', 'patch'], 'categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::post('deleteCategory/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
     Route::post('catupdate/{id}', [CategoryController::class, 'update'])->name('catUpdate');
     Route::post('/catstatus/{id}', [CategoryController::class, 'catstatus'])->name('CatStatus');
@@ -331,7 +337,13 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('entityUpdate/{id}', [EntityController::class, 'update'])->name('entityUpdate');
 
     // Regulation management
-    Route::resource('regulations', RegulationController::class);
+    Route::get('regulations', [RegulationController::class, 'index'])->name('regulations.index');
+    Route::get('regulations/create', [RegulationController::class, 'create'])->name('regulations.create');
+    Route::post('regulations', [RegulationController::class, 'store'])->name('regulations.store');
+    Route::get('regulations/{regulation}', [RegulationController::class, 'show'])->name('regulations.show');
+    Route::get('regulations/{regulation}/edit', [RegulationController::class, 'edit'])->name('regulations.edit');
+    Route::match(['put', 'patch'], 'regulations/{regulation}', [RegulationController::class, 'update'])->name('regulations.update');
+    Route::delete('regulations/{regulation}', [RegulationController::class, 'destroy'])->name('regulations.destroy');
     Route::get('get-categories', [RegulationController::class, 'getCategory'])->name('getCategory');
     Route::post('regulations/{id}', [RegulationController::class, 'destroy'])->name('deleteRegulations');
     Route::get('regulations/create/{selectedValue}', [RegulationController::class, 'redirectToUrl'])->name('redirect');
