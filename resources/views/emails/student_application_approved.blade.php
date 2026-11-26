@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Application Approved - Student Research Access</title>
+    <title>Application Approved - {{ optional($verification->plan)->name ?? 'Academic Subscription' }}</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,600,700" rel="stylesheet" type="text/css">
     <style>
         html, body {
@@ -57,7 +57,7 @@
                                     Financial Markets Regulations &amp; Rules Repository
                                 </h3>
                                 <p style="margin: 4px 0 0; font-size: 12px; color: #ad8e4f; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                                    Academic Grant Program
+                                    {{ $subscription ? 'Academic Grant Program' : 'Academic Subscription Onboarding' }}
                                 </p>
                             </td>
                         </tr>
@@ -71,7 +71,7 @@
                         <tr>
                             <td style="padding: 35px 35px 25px;">
                                 <div style="display: inline-block; padding: 4px 12px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 15px; text-transform: uppercase;">
-                                    Access Approved &bull; Active
+                                    {{ $subscription ? 'Access Approved • Active' : 'Affiliation Verified • Approved' }}
                                 </div>
                                 <h2 style="font-size: 22px; color: #002060; font-weight: 700; margin-bottom: 12px; line-height: 1.3;">
                                     @if ($subscription)

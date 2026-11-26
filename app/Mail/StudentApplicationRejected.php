@@ -25,13 +25,29 @@ class StudentApplicationRejected extends Mailable
 
     public function build()
     {
+        $this->verification->loadMissing(['plan.subTier']);
+        $plan = $this->verification->plan;
+        $planName = optional($plan)->name ?? 'Academic Subscription';
+        $subTierName = optional(optional($plan)->subTier)->name ?? $planName;
+        $isComplimentary = $plan
+            ? ((float) ($plan->price ?? 0) <= 0 && (float) ($plan->price_usd ?? 0) <= 0)
+            : false;
+
+        $reapplyUrl = $this->verification->subscription_plan_id
+            ? route('studentVerification.apply', ['plan_id' => $this->verification->subscription_plan_id])
+            : route('studentVerification.apply');
+
         return $this->view('emails.student_application_rejected')
-            ->subject('Update on Your Student Research Access Application')
+            ->subject("Update on Your {$planName} Application")
             ->with([
                 'verification' => $this->verification,
                 'student' => $this->student,
                 'reason' => $this->reason,
-                'reapplyUrl' => route('studentVerification.apply'),
+                'plan' => $plan,
+                'planName' => $planName,
+                'subTierName' => $subTierName,
+                'isComplimentary' => $isComplimentary,
+                'reapplyUrl' => $reapplyUrl,
             ]);
     }
 }
