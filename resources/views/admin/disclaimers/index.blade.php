@@ -15,7 +15,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Disclaimers</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Record of legal disclaimer acceptances across internal and external portal users.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -42,27 +42,41 @@
                                 <div class="card-inner">
                                     <table class="datatable-init nowrap table">
                                         <thead>
-                           <tr>
-                                <th>S/N</th>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>IP Address</th>
-                                <th>Accepted At</th>
-                                
-                            </tr>
+                                            <tr>
+                                                <th style="width: 60px;">S/N</th>
+                                                <th>User</th>
+                                                <th>Email</th>
+                                                <th>IP Address</th>
+                                                <th>Accepted At</th>
+                                            </tr>
                                         </thead>
                                         <tbody>
-                              @foreach($acceptances as $acceptance)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $acceptance->user->name ?? 'N/A' }}</td>
-                                <td>{{ $acceptance->user->email ?? 'N/A' }}</td>
-                                <td>{{ $acceptance->ip_address ?? 'N/A' }}</td>
-                                <td> {{ \Carbon\Carbon::parse($acceptance->created_at)->addHour()->format('M. j, Y g:i:s A') }} </td>
-                               
-                            </tr>
-                            @endforeach
-
+                                            @foreach($acceptances as $acceptance)
+                                                @php
+                                                    $accUserName = $acceptance->user->name ?? 'N/A';
+                                                    $accInitials = strtoupper(substr($accUserName, 0, 2));
+                                                @endphp
+                                                <tr>
+                                                    <td class="text-muted">{{ $loop->iteration }}</td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="mr-2" style="width: 30px; height: 30px; border-radius: 50%; background: #eef2f7; color: #0c2b70; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #dbe4f0; flex-shrink: 0;">
+                                                                {{ $accInitials }}
+                                                            </span>
+                                                            <span style="font-weight: 600; color: #0f172a;">{{ $accUserName }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style="color: #0c2b70;">{{ $acceptance->user->email ?? 'N/A' }}</td>
+                                                    <td>
+                                                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-family: monospace; font-size: 11.5px;">
+                                                            {{ $acceptance->ip_address ?? 'N/A' }}
+                                                        </span>
+                                                    </td>
+                                                    <td style="color: #64748b;">
+                                                        {{ \Carbon\Carbon::parse($acceptance->created_at)->addHour()->format('M. j, Y g:i:s A') }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>

@@ -16,7 +16,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Admin Users List</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Manage internal portal users, functional groups, roles, and approval statuses.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -37,10 +37,10 @@
                                                 @endcan
 
                                                 <li class="nk-block-tools-opt">
-                                                    <a href="#" class="btn btn-icon btn-primary d-md-none"></a>
+                                                    <a href="{{ url('deactivated') }}" class="btn btn-icon btn-outline-light d-md-none" title="Deactivated Users"><em class="icon ni ni-user-cross"></em></a>
                                                     <a href="{{ url('deactivated') }}"
-                                                        class="btn btn-primary d-none d-md-inline-flex">
-                                                        <span>Deactivated Users</span>
+                                                        class="btn btn-outline-light d-none d-md-inline-flex">
+                                                        <em class="icon ni ni-user-cross"></em><span>Deactivated Users</span>
                                                     </a>
                                                 </li>
 
@@ -237,7 +237,7 @@
                                                             <span class="badge fmdq_Blue">Awaiting Approval<span>
                                                         @endif
                                                         @if ($user->status == 1)
-                                                            <span class="badge badge-primary">Approved</span>
+                                                            <span class="badge badge-success">Approved</span>
                                                         @endif
                                                         @if ($user->status == 2)
                                                             <span class="badge badge-danger">Rejected</span>

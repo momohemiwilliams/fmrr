@@ -17,7 +17,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">External Users</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>View registered external subscribers, contact details, verification, and subscription status.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -170,9 +170,9 @@
 
                                                     <td class="nk-tb-col tb-col-lg">
                                                         @if ($user->email_verified_at == null)
-                                                            <span class="badge fmdq_Blue">Pending<span>
-                                                                @else
-                                                                    <span class="badge badge-primary">Active</span>
+                                                            <span class="badge badge-warning">Pending</span>
+                                                        @else
+                                                            <span class="badge badge-success">Active</span>
                                                         @endif
 
 
@@ -192,7 +192,7 @@
                                                         @if ($activeSubscription)
                                                             <span class="badge badge-success">Active</span>
                                                         @else
-                                                            <span class="badge badge-danger">Inactive<span>
+                                                            <span class="badge badge-danger">Inactive</span>
                                                         @endif
                                                     </td>
                                                     <td class="nk-tb-col tb-col-lg">

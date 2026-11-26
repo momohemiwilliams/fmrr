@@ -11,23 +11,13 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Add New Document</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Upload, classify, and index a new regulatory document for approval.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
-                                    <div class="toggle-wrap nk-block-tools-toggle">
-                                        <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
-                                            data-target="more-options"><em class="icon ni ni-more-v"></em></a>
-                                        <div class="toggle-expand-content" data-content="more-options">
-                                            <ul class="nk-block-tools g-3">
-
-
-
-
-
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <a href="{{ url('regulations') }}" class="btn btn-outline-light">
+                                        <em class="icon ni ni-arrow-left mr-1"></em> Back to Documents
+                                    </a>
                                 </div><!-- .nk-block-head-content -->
                             </div><!-- .nk-block-between -->
                         </div><!-- .nk-block-head -->
@@ -43,16 +33,15 @@
 
 
                                 @if (count($errors) > 0)
-                                    <div>
-                                        <div class="alert alert-danger alert-icon alert-dismissible">
-                                            <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                            <button class="close" data-dismiss="alert"></button>
-                                        </div>
+                                    <div class="alert alert-danger alert-icon alert-dismissible">
+                                        <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
+                                        <ul>
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <button class="close" data-dismiss="alert"></button>
+                                    </div>
                                 @endif
 
 
@@ -261,12 +250,11 @@
                                                                 <div class="form-group">
                                                                     <label class="form-label" for="market-product-tags">Markets and Products</label>
                                                                     <div class="form-control-wrap">
-                                                                        <select class="form-control" name="market_product_tags[]" id="market-product-tags" multiple>
+                                                                        <select class="form-control select2" name="market_product_tags[]" id="market-product-tags" multiple="multiple" data-placeholder="Select markets &amp; products">
                                                                             @foreach ($marketProductTags as $tag)
                                                                                 <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                                                                             @endforeach
                                                                         </select>
-                                                                        <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple tags</small>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -378,27 +366,15 @@
 
 
                                                         <div class="col-md-12">
-                                                            <br>
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Alphabet
-                                                                    Indexing</label>
-                                                                <div class="form-control-wrap">
-                                                                    <div class="form-group">
-
-
-                                                                        @foreach ($alpha as $val)
-                                                                            <div class="form-check form-check-inline"
-                                                                                style="margin-right: 10px;">
-                                                                                <input class="form-check-input" required
-                                                                                    type="radio" name="alpha_id"
-                                                                                    value="{{ $val->id }}"
-                                                                                    style="margin-right: 10px;">
-
-                                                                                <label class="btn btn-success"
-                                                                                    style="margin-right: 10px;">{{ $val->name }}</label>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
+                                                            <div class="form-group mt-2">
+                                                                <label class="form-label mb-2">Alphabet Indexing</label>
+                                                                <div class="fmdq-alpha-grid">
+                                                                    @foreach ($alpha as $val)
+                                                                        <div class="fmdq-alpha-item">
+                                                                            <input class="fmdq-alpha-radio" required type="radio" name="alpha_id" id="alpha-add-{{ $val->id }}" value="{{ $val->id }}">
+                                                                            <label class="fmdq-alpha-tile" for="alpha-add-{{ $val->id }}">{{ $val->name }}</label>
+                                                                        </div>
+                                                                    @endforeach
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -551,6 +527,11 @@
     $(document).ready(function() {
         $('#related-documents-select').select2();
         $('#nested-related-documents-select').select2();
+        $('#market-product-tags').select2({
+            placeholder: 'Select markets & products',
+            allowClear: true,
+            width: '100%'
+        });
     });
     </script>
 

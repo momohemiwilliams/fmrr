@@ -16,7 +16,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Groups</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Organize internal portal users into functional FMDQ departments and groups.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -164,7 +164,7 @@
                                                             <span class="badge fmdq_Blue">Awaiting Approval<span>
                                                         @endif
                                                         @if ($group->status == 1)
-                                                            <span class="badge badge-primary">Approved</span>
+                                                            <span class="badge badge-success">Approved</span>
                                                         @endif
                                                         @if ($group->status == 2)
                                                             <span class="badge badge-danger">Rejected</span>

@@ -16,7 +16,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Roles</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Manage internal access roles, permissions, and approval statuses.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -155,10 +155,10 @@
 
                                                     <td class="nk-tb-col tb-col-lg">
                                                         @if ($role->admin_status == 0)
-                                                            <span class="badge fmdq_Blue">Awaiting Approval<span>
+                                                            <span class="badge badge-warning">Awaiting Approval</span>
                                                         @endif
                                                         @if ($role->admin_status == 1)
-                                                            <span class="badge badge-primary">Approved</span>
+                                                            <span class="badge badge-success">Approved</span>
                                                         @endif
                                                         @if ($role->admin_status == 2)
                                                             <span class="badge badge-danger">Rejected</span>

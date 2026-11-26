@@ -17,7 +17,7 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Activity Logs</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Audit trail of portal user actions, approvals, and system events.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
@@ -42,57 +42,34 @@
 
                             <div class="card card-preview">
                                 <div class="card-inner">
-                                    <table class="datatable-init nowrap table">
+                                    <table class="datatable-init table">
                                         <thead>
                                             <tr>
-                                                <th>No</th>
+                                                <th style="width: 60px;">No</th>
                                                 <th>Subject</th>
-                                                <th>IP</th>
-
-
-                                                {{-- <th width="300px">User Agent</th> --}}
-
+                                                <th>IP Address</th>
                                                 <th>User Email</th>
                                                 <th>Date Created</th>
-
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @if ($logs->count())
                                                 @foreach ($logs as $key => $log)
                                                     <tr>
-                                                        <td>{{ ++$key }}</td>
-                                                        <td>{{ $log->subject }}</td>
-
-
-                                                        <td class="">{{ $log->ip }}</td>
-                                                        {{-- <td class="text-danger">{{ $log->agent }}</td> --}}
-
-                                                        <td>{{ $log->user_email }}</td>
-                                                        {{-- <td>{{ $log->created_at }}</td> --}}
-
-                                                        <td class="nk-tb-col">
-                                                            @php
-                                                                $postdate = date_format($log->created_at, 'F d,Y');
-
-                                                            @endphp
-
-                                                            <?php
-                                                            
-                                                            $timestamp = strtotime($postdate);
-                                                            $newDateFormat = date('M. d, Y', $timestamp);
-                                                            echo $newDateFormat;
-                                                            
-                                                            ?>
-
-
-
+                                                        <td class="text-muted">{{ ++$key }}</td>
+                                                        <td style="white-space: normal; min-width: 280px; font-weight: 500; color: #0f172a;">{{ $log->subject }}</td>
+                                                        <td>
+                                                            <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-family: monospace; font-size: 11.5px;">
+                                                                {{ $log->ip }}
+                                                            </span>
                                                         </td>
-
+                                                        <td style="color: #0c2b70;">{{ $log->user_email }}</td>
+                                                        <td class="text-nowrap" style="color: #64748b;">
+                                                            {{ $log->created_at ? \Carbon\Carbon::parse($log->created_at)->format('M. d, Y') : 'N/A' }}
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             @endif
-
                                         </tbody>
                                     </table>
                                 </div>

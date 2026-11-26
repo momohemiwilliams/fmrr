@@ -114,10 +114,10 @@
                                             <span style="font-size: 13px; color: #64748b;">Organization</span>
                                             <span style="font-size: 13px; font-weight: 500; color: #1e293b;">{{ $user->company_name ?: 'FMDQ Group PLC' }}</span>
                                         </li>
-                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                        <!-- <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
                                             <span style="font-size: 13px; color: #64748b;">Session Timeout</span>
                                             <span style="font-size: 13px; font-weight: 700; color: #0c2b70;">{{ $sessionTimeout }} minutes</span>
-                                        </li>
+                                        </li> -->
                                         <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
                                             <span style="font-size: 13px; color: #64748b;">Last Password Change</span>
                                             <span style="font-size: 13px; color: #475569;">

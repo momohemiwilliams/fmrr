@@ -12,18 +12,18 @@
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">{{ $regulation->title }}</h3>
                                     <div class="nk-block-des text-soft">
-
+                                        <p>Read-only overview of document metadata, classification, status, and attachments.</p>
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
-                                    <div class="toggle-wrap nk-block-tools-toggle">
-                                        <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1"
-                                            data-target="more-options"><em class="icon ni ni-more-v"></em></a>
-                                        <div class="toggle-expand-content" data-content="more-options">
-                                            <ul class="nk-block-tools g-3">
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <a href="{{ url('regulations') }}" class="btn btn-outline-light mr-1">
+                                        <em class="icon ni ni-arrow-left mr-1"></em> Back to Documents
+                                    </a>
+                                    @can('document-edit')
+                                        <a href="{{ route('edit_doc', $regulation->id) }}" class="btn btn-primary">
+                                            <em class="icon ni ni-edit mr-1"></em> Edit Document
+                                        </a>
+                                    @endcan
                                 </div><!-- .nk-block-head-content -->
                             </div><!-- .nk-block-between -->
                         </div><!-- .nk-block-head -->
@@ -45,16 +45,15 @@
 
 
                                 @if (count($errors) > 0)
-                                    <div>
-                                        <div class="alert alert-danger alert-icon alert-dismissible">
-                                            <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                            <button class="close" data-dismiss="alert"></button>
-                                        </div>
+                                    <div class="alert alert-danger alert-icon alert-dismissible">
+                                        <strong>Opps!</strong> Something went wrong, please check below errors.<br><br>
+                                        <ul>
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                        <button class="close" data-dismiss="alert"></button>
+                                    </div>
                                 @endif
 
 
@@ -574,31 +573,15 @@
 
 
                                                         <div class="col-md-12">
-                                                            <br>
-                                                            <div class="form-group">
-                                                                <label class="form-label" for="lead-name">Alphabet
-                                                                    Indexing</label>
-                                                                <div class="form-control-wrap">
-                                                                    <div class="form-group">
-
-
-                                                                        @foreach ($alpha as $val)
-                                                                            <div class="form-check form-check-inline"
-                                                                                style="margin-right: 10px;">
-                                                                                <input disabled class="form-check-input" required
-                                                                                    type="radio" name="alpha_id"
-                                                                                    value="{{ $val->id }}"
-                                                                                    style="margin-right: 10px;"
-                                                                                    <?php if ($regulation->alpha_id == $val->id) {
-                                                                                        echo 'checked="checked"';
-                                                                                    } ?>>
-
-                                                                                <label
-                                                                                    class="btn btn-success waves-effect waves-light"
-                                                                                    style="margin-right: 10px;">{{ $val->name }}</label>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
+                                                            <div class="form-group mt-2">
+                                                                <label class="form-label mb-2">Alphabet Indexing</label>
+                                                                <div class="fmdq-alpha-grid">
+                                                                    @foreach ($alpha as $val)
+                                                                        <div class="fmdq-alpha-item">
+                                                                            <input disabled class="fmdq-alpha-radio" required type="radio" name="alpha_id" id="alpha-view-{{ $val->id }}" value="{{ $val->id }}" @if ($regulation->alpha_id == $val->id) checked @endif>
+                                                                            <label class="fmdq-alpha-tile" for="alpha-view-{{ $val->id }}">{{ $val->name }}</label>
+                                                                        </div>
+                                                                    @endforeach
                                                                 </div>
                                                             </div>
                                                         </div>
