@@ -283,7 +283,7 @@
                     @endcanany
 
                     @canany(['subscription-list', 'subscription-tier-list', 'student-verification-list'])
-                        @php $isSubActive = request()->is('subscription-tiers*', 'subscription-sub-tiers*', 'subcription_plan*', 'subscribers*', 'student-verification*'); @endphp
+                        @php $isSubActive = request()->is('subscription-tiers*', 'subscription-sub-tiers*', 'subcription_plan*', 'subscribers*', 'transactions*', 'student-verification*'); @endphp
                         <li class="nk-menu-item has-sub {{ $isSubActive ? 'active current-page' : '' }}">
                             <a href="#" class="nk-menu-link nk-menu-toggle">
                                 <span class="nk-menu-icon"><em class="icon ni ni-wallet-alt"></em></span>
@@ -311,6 +311,11 @@
                                     <li class="nk-menu-item {{ request()->is('subscribers*') ? 'active' : '' }}">
                                         <a href="{{ url('subscribers') }}" class="nk-menu-link">
                                             <span class="nk-menu-text">Subscribers</span>
+                                        </a>
+                                    </li>
+                                    <li class="nk-menu-item {{ request()->is('transactions*') ? 'active' : '' }}">
+                                        <a href="{{ route('transactions.index') }}" class="nk-menu-link">
+                                            <span class="nk-menu-text">Transactions</span>
                                         </a>
                                     </li>
                                 @endcan

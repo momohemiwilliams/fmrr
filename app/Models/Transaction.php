@@ -23,6 +23,11 @@ class Transaction extends Model
         return $this->belongsTo(Regulation::class);
     }
 
+    public function subscriptionPlan()
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'subscription_plan_id');
+    }
+
 
 
     

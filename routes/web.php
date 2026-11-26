@@ -209,7 +209,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::post('news_status/{id}', [NewsController::class, 'news_status'])->name('news_status');
 
     // Transactions routes
-    Route::get('transactions', [TransactionController::class, 'index']);
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('subcription_plan', [TransactionController::class, 'subcription_plan'])->name('subcription_plan');
     Route::get('subscribers', [TransactionController::class, 'subscribers'])->name('subscribers');
     Route::post('add_plan', [TransactionController::class, 'addSubcription'])->name('add_plan');
@@ -347,7 +347,7 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::get('get-related-documents/{categoryId}', [RegulationController::class, 'getRelatedDocumentsByCategory']);
 
     // Transaction management
-    Route::get('transactions', [TransactionController::class, 'index']);
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('subcription_plan', [TransactionController::class, 'subcription_plan'])->name('subcription_plan');
     Route::get('subscribers', [TransactionController::class, 'subscribers'])->name('subscribers');
     Route::post('add_plan', [TransactionController::class, 'addSubcription'])->name('add_plan');

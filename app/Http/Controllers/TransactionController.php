@@ -30,10 +30,63 @@ class TransactionController extends Controller
 
     public function index(Request $request)
     {
+        $query = Transaction::with(['user', 'regulation', 'subscriptionPlan'])
+            ->orderBy('created_at', 'desc');
 
+        $statusFilter = $request->input('status', 'all');
+        if ($statusFilter === 'success') {
+            $query->whereIn('status', ['success', 'successful']);
+        } elseif ($statusFilter === 'pending') {
+            $query->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', '')->orWhere('status', 'pending');
+            });
+        } elseif ($statusFilter === 'failed') {
+            $query->where('status', 'failed');
+        }
 
-        $data = Transaction::orderBy('created_at', 'desc')->get();
-        return view('transactions.index', compact('data'));
+        if ($request->filled('currency') && $request->currency !== 'all') {
+            if ($request->currency === 'NGN') {
+                $query->where(function ($q) {
+                    $q->where('currency', 'NGN')->orWhereNull('currency')->orWhere('currency', '');
+                });
+            } else {
+                $query->where('currency', $request->currency);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('reference', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('subscriptionPlan', function ($pq) use ($search) {
+                      $pq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $data = $query->paginate(15)->withQueryString();
+
+        $stats = [
+            'total' => Transaction::count(),
+            'success' => Transaction::whereIn('status', ['success', 'successful'])->count(),
+            'pending' => Transaction::where(function ($q) {
+                $q->whereNull('status')->orWhere('status', '')->orWhere('status', 'pending');
+            })->count(),
+            'failed' => Transaction::where('status', 'failed')->count(),
+            'revenue_ngn' => Transaction::whereIn('status', ['success', 'successful'])
+                ->where(function ($q) {
+                    $q->where('currency', 'NGN')->orWhereNull('currency')->orWhere('currency', '');
+                })->sum('amount'),
+            'revenue_usd' => Transaction::whereIn('status', ['success', 'successful'])
+                ->where('currency', 'USD')->sum('amount'),
+        ];
+
+        return view('transactions.index', compact('data', 'stats'));
     }
 
 
