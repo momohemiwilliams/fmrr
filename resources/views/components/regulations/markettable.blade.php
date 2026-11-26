@@ -163,6 +163,8 @@
     }
   </style>
 
+@include('components.regulations.table-styles', ['tableId' => $tableId])
+
 @if($showFilters)
 <div class="filter-wrapper">
     @include('components.filters.table-filters', [
@@ -364,7 +366,11 @@
                                                                 <span>{{ $relatedDoc->title }} ({{ $relatedDoc->year->name }})</span>
                                                                 <div>
                                                                     @if($relatedDoc->ceased)
-                                                                        <span class="badge badge-danger ms-2"> {{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
+                                                                        @php
+                                                                            $relStatusLower = strtolower(trim($relatedDoc->ceased));
+                                                                            $relBadge = $relStatusLower === 'active' ? 'badge-success' : (str_contains($relStatusLower, 'amended') ? 'badge-warning' : (str_contains($relStatusLower, 'superseded') ? 'badge-secondary' : 'badge-danger'));
+                                                                        @endphp
+                                                                        <span class="badge {{ $relBadge }} ms-2">{{ str_replace([',','/'], [', ', ' '], $relatedDoc->ceased) }}</span>
                                                                     @else
                                                                         <span class="badge badge-success ms-2">Active</span>
                                                                     @endif

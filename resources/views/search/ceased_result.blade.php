@@ -5,10 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha384-R334r6kryDNB/GWs2kfB6blAOyWPCxjdHSww/mo7fel+o5TM/AOobJ0QpGRXSDh4" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
-    <script src="{{ asset('public/assets/js/custom-table-filter.js') }}"></script>
     <style>
-        
-
         .alphabet-filter,
         .year-filter {
             margin-bottom: 10px;
@@ -27,17 +24,6 @@
             color: #000;
         }
     </style>
-        <script>
-
-        $(document).ready(function() {
-            // Initialize custom table filter (no years needed for this page)
-            initCustomTableFilter('example', {
-                years: [],
-                showAlphabetFilter: true,
-                showEntityFilter: false
-            });
-        });
-    </script>
     <div class="info">
         {{-- <div class="go-back">
             < Go back</div> --}}
@@ -87,7 +73,24 @@
     </div>
 
     <section class="gd-main-container">
-        @if (is_null($search))
+        @include('components.regulations.table-styles', ['tableId' => 'example'])
+        @if (!is_null($search) || request()->anyFilled(['search', 'letter', 'year', 'entity', 'market_product', 'status']))
+            <div style="width: 100%; padding: 0 20px;">
+                @include('components.filters.table-filters', [
+                    'records' => $search ?? collect(),
+                    'tableId' => 'example',
+                    'options' => [
+                        'showAlphabetFilter' => true,
+                        'showYearFilter' => true,
+                        'showEntityFilter' => true,
+                        'showStatusFilter' => true,
+                        'showMarketProductFilter' => true,
+                        'years' => $years ?? []
+                    ]
+                ])
+            </div>
+        @endif
+        @if (is_null($search) || count($search) == 0)
             <img src="{{ asset('public/users/assets/illustration-search.svg') }}" height="250px"
                 alt="No document purchased illustration" />
             <div class="no-doc">Search Not Found</div>
@@ -582,15 +585,11 @@
 
 
 
-            {{-- <div style="color: red">
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
-
-                {{ $search->links('pagination::bootstrap-4') }}
-    </div> --}}
+            @if ($search instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $search->appends(request()->query())->links('pagination::bootstrap-4') }}
+                </div>
+            @endif
         @endif
     </section>
     </div>

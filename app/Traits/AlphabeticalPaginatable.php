@@ -27,6 +27,57 @@ trait AlphabeticalPaginatable
             $extraQuery($query);
         }
 
+        // Apply server-side filter query parameters across all pages
+        $req = request();
+        if ($req->filled('search')) {
+            $search = trim($req->input('search'));
+            $query->where('title', 'LIKE', "%{$search}%");
+        }
+
+        if ($req->filled('letter')) {
+            $letter = strtoupper(substr(trim($req->input('letter')), 0, 1));
+            $query->whereRaw('UPPER(LEFT(title, 1)) = ?', [$letter]);
+        }
+
+        if ($req->filled('year')) {
+            $yearFilter = trim($req->input('year'));
+            $query->whereHas('year', function ($yq) use ($yearFilter) {
+                $yq->where('name', $yearFilter);
+            });
+        }
+
+        if ($req->filled('entity')) {
+            $entityFilter = trim($req->input('entity'));
+            $query->whereHas('entity', function ($eq) use ($entityFilter) {
+                $eq->where('name', $entityFilter);
+            });
+        }
+
+        if ($req->filled('market_product')) {
+            $mpFilter = trim($req->input('market_product'));
+            $query->whereHas('marketProductTags', function ($mq) use ($mpFilter) {
+                $mq->where('name', $mpFilter);
+            });
+        }
+
+        if ($req->filled('status')) {
+            $statusFilter = trim($req->input('status'));
+            if ($statusFilter === 'Empty Space') {
+                $query->where(function ($sq) {
+                    $sq->whereNull('ceased')->orWhere('ceased', '');
+                });
+            } elseif (strcasecmp($statusFilter, 'Active') === 0) {
+                $query->where(function ($sq) {
+                    $sq->whereNull('ceased')
+                       ->orWhere('ceased', '')
+                       ->orWhere('ceased', 'Active')
+                       ->orWhere('ceased', 'LIKE', '%Active%');
+                });
+            } else {
+                $query->where('ceased', 'LIKE', "%{$statusFilter}%");
+            }
+        }
+
         // 1. Get counts of items per first letter
         $countQuery = clone $query;
         $letterCounts = $countQuery->selectRaw('UPPER(LEFT(title, 1)) as letter, count(*) as count')

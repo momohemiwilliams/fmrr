@@ -370,13 +370,21 @@ class SearchController extends Controller
         $isSubscribed = Subscription::where('user_id', $userId)->where('status', 1)->exists();
 
         $years = Year::pluck('name'); // Assuming 'year' is the column name
-
-        if (count($search) == 0) {
-            return view('search.ceased_result', ['search' => null, 'title' => $title, 'total' => $total, 'isSubscribed']);
-        }
-
         $statuses          = DB::table('doc_type')->pluck('name')->toArray();
         $formattedStatuses = implode('/', $statuses);
+
+        $hasActiveFilters = $request->anyFilled(['search', 'letter', 'year', 'entity', 'market_product', 'status']);
+        if (count($search) == 0 && !$hasActiveFilters) {
+            return view('search.ceased_result', [
+                'search' => null,
+                'years' => $years,
+                'title' => $title,
+                'total' => $total,
+                'isSubscribed' => $isSubscribed,
+                'formattedStatuses' => $formattedStatuses,
+                'statuses' => $statuses,
+            ]);
+        }
 
         return view('search.ceased_result', compact('search', 'years', 'title', 'total', 'isSubscribed', 'formattedStatuses', 'statuses'));
     }
