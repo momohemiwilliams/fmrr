@@ -70,28 +70,28 @@
                     <div class="row g-gs">
                         <!-- Left Column: User Summary Card -->
                         <div class="col-xl-4 col-lg-5">
-                            <div class="card card-bordered">
-                                <div class="card-inner text-center border-bottom pb-4" style="background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
-                                    <div class="user-avatar-custom mb-3 mx-auto">
-                                        <div style="width: 86px; height: 86px; border-radius: 50%; background: linear-gradient(135deg, #0c2b70 0%, #1a3a8f 100%); color: #ffffff; font-size: 28px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 3px solid #d5a73b; box-shadow: 0 4px 12px rgba(12, 43, 112, 0.25);">
+                            <div class="card card-bordered" style="border-radius: 14px; overflow: hidden;">
+                                <div class="card-inner text-center border-bottom py-4 px-4" style="background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
+                                    <div class="d-flex justify-content-center mb-3">
+                                        <div style="width: 84px; min-width: 84px; height: 84px; min-height: 84px; border-radius: 50%; background: linear-gradient(135deg, #0c2b70 0%, #1a3a8f 100%); color: #ffffff; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 3px solid #d5a73b; box-shadow: 0 6px 16px rgba(12, 43, 112, 0.22); letter-spacing: 0.5px;">
                                             {{ $initials }}
                                         </div>
                                     </div>
-                                    <h5 class="card-title mb-1" style="color: #0c2b70; font-weight: 700;">{{ $user->name }}</h5>
-                                    <span class="sub-text text-muted d-block mb-3">{{ $user->email }}</span>
+                                    <h5 class="card-title mb-1" style="color: #0f172a; font-weight: 700; font-size: 18px;">{{ $user->name }}</h5>
+                                    <span class="sub-text d-block mb-3" style="color: #64748b; font-size: 13px;">{{ $user->email }}</span>
                                     
-                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-1 mb-2">
-                                        <span class="badge badge-dim badge-primary mr-1 mb-1" style="font-weight: 600;">Internal User</span>
-                                        <span class="badge badge-dim badge-success mr-1 mb-1">Active</span>
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center mb-2" style="gap: 6px;">
+                                        <span class="badge badge-pill" style="background: #eef2ff; color: #0c2b70; border: 1px solid #c7d2fe; font-weight: 600; padding: 4px 10px;">Internal User</span>
+                                        <span class="badge badge-pill" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 600; padding: 4px 10px;">Active</span>
                                         @if($user->group)
-                                            <span class="badge badge-dim badge-secondary mr-1 mb-1">{{ $user->group->name }}</span>
+                                            <span class="badge badge-pill" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 4px 10px;">{{ $user->group->name }}</span>
                                         @endif
                                     </div>
 
                                     @if($user->roles && $user->roles->count() > 0)
-                                        <div class="mt-2">
+                                        <div class="d-flex flex-wrap justify-content-center mt-2" style="gap: 6px;">
                                             @foreach($user->roles as $role)
-                                                <span class="badge badge-pill badge-outline-primary mr-1 mb-1" style="font-size: 11px;">
+                                                <span class="badge badge-pill" style="background: #ffffff; color: #0c2b70; border: 1px solid #cbd5e1; font-size: 11px; font-weight: 600; padding: 4px 10px;">
                                                     <em class="icon ni ni-shield-check mr-1"></em>{{ $role->name }}
                                                 </span>
                                             @endforeach
@@ -99,46 +99,34 @@
                                     @endif
                                 </div>
 
-                                <div class="card-inner">
-                                    <h6 class="overline-title text-primary-alt mb-3">Account Overview</h6>
-                                    <ul class="data-list is-compact">
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">User ID</div>
-                                                <div class="data-value font-weight-bold">#{{ $user->id }}</div>
-                                            </div>
+                                <div class="card-inner px-4 py-4">
+                                    <h6 class="overline-title mb-3" style="color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 0.7px;">Account Overview</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                            <span style="font-size: 13px; color: #64748b;">User ID</span>
+                                            <span style="font-size: 13px; font-weight: 700; color: #0f172a;">#{{ $user->id }}</span>
                                         </li>
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">Phone</div>
-                                                <div class="data-value">{{ $user->phone ?? 'Not set' }}</div>
-                                            </div>
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                            <span style="font-size: 13px; color: #64748b;">Phone</span>
+                                            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">{{ $user->phone ?: 'Not set' }}</span>
                                         </li>
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">Organization</div>
-                                                <div class="data-value">{{ $user->company_name ?? 'FMDQ Group PLC' }}</div>
-                                            </div>
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                            <span style="font-size: 13px; color: #64748b;">Organization</span>
+                                            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">{{ $user->company_name ?: 'FMDQ Group PLC' }}</span>
                                         </li>
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">Session Timeout</div>
-                                                <div class="data-value text-primary font-weight-bold">{{ $sessionTimeout }} minutes</div>
-                                            </div>
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                            <span style="font-size: 13px; color: #64748b;">Session Timeout</span>
+                                            <span style="font-size: 13px; font-weight: 700; color: #0c2b70;">{{ $sessionTimeout }} minutes</span>
                                         </li>
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">Last Password Change</div>
-                                                <div class="data-value text-soft">
-                                                    {{ $user->password_changed_at ? $user->password_changed_at->format('M d, Y') : 'Never' }}
-                                                </div>
-                                            </div>
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: #f1f5f9 !important;">
+                                            <span style="font-size: 13px; color: #64748b;">Last Password Change</span>
+                                            <span style="font-size: 13px; color: #475569;">
+                                                {{ $user->password_changed_at ? \Carbon\Carbon::parse($user->password_changed_at)->format('M d, Y') : 'Never' }}
+                                            </span>
                                         </li>
-                                        <li class="data-item">
-                                            <div class="data-col">
-                                                <div class="data-label">Account Created</div>
-                                                <div class="data-value text-soft">{{ $user->created_at ? $user->created_at->format('M d, Y') : 'N/A' }}</div>
-                                            </div>
+                                        <li class="d-flex justify-content-between align-items-center pt-2 pb-0">
+                                            <span style="font-size: 13px; color: #64748b;">Account Created</span>
+                                            <span style="font-size: 13px; color: #475569;">{{ $user->created_at ? \Carbon\Carbon::parse($user->created_at)->format('M d, Y') : 'N/A' }}</span>
                                         </li>
                                     </ul>
                                 </div>
