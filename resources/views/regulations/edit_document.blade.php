@@ -16,7 +16,7 @@
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
-                                    <a href="{{ url('regulations') }}" class="btn btn-outline-light mr-1">
+                                    <a href="{{ url('documents') }}" class="btn btn-outline-light mr-1">
                                         <em class="icon ni ni-arrow-left mr-1"></em> Back to Documents
                                     </a>
                                     <a href="{{ route('view_doc', $regulation->id) }}" class="btn btn-light">

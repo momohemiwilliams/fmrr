@@ -367,7 +367,7 @@ class CategoryController extends Controller
 
                 $this->logAndNotifyCategorySuccess($update_status, $update_status_pending, $request->status);
 
-                return Redirect::to('categories')->with('success', $msg);
+                return Redirect::to('category')->with('success', $msg);
             });
         } catch (\Exception $e) {
             Log::error('Category status update failed: ' . $e->getMessage());

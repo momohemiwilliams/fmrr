@@ -291,7 +291,7 @@ class RegulationController extends Controller
         $inputter_title = 'Please be advised that Document  (' . $action . ') has been created.';
         $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
-        return Redirect::to('regulations')->with('success', 'Document uploaded successfully.');
+        return Redirect::to('documents')->with('success', 'Document uploaded successfully.');
     }
 
     public function update_doc(Request $request, $id)
@@ -446,7 +446,7 @@ class RegulationController extends Controller
         $this->insertNotifyInputter($action, $inputter_title, $inputter_email);
 
         //return   $new_regulation;
-        return Redirect::to('regulations')->with('success', 'Document updated successfully.');
+        return Redirect::to('documents')->with('success', 'Document updated successfully.');
     }
 
     public function show($id)

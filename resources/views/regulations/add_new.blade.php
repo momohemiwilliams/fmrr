@@ -15,7 +15,7 @@
                                     </div>
                                 </div><!-- .nk-block-head-content -->
                                 <div class="nk-block-head-content">
-                                    <a href="{{ url('regulations') }}" class="btn btn-outline-light">
+                                    <a href="{{ url('documents') }}" class="btn btn-outline-light">
                                         <em class="icon ni ni-arrow-left mr-1"></em> Back to Documents
                                     </a>
                                 </div><!-- .nk-block-head-content -->

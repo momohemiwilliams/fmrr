@@ -246,7 +246,7 @@ Route::group(['middleware' => ['auth', 'check.disclaimer.profile']], function ()
     Route::get('/regulations/search/{title}', [RegulationController::class, 'search']);
     Route::post('/ceased/{id}', [RegulationController::class, 'statusceased'])->name('statusCeased');
     Route::get('get-categories', [RegulationController::class, 'getCategory'])->name('getCategory');
-    Route::get('regulations/create/{selectedValue}', [RegulationController::class, 'redirectToUrl'])->name('redirect');
+    Route::get('documents/create/{selectedValue}', [RegulationController::class, 'redirectToUrl'])->name('redirect');
     Route::get('edit_doc/{slug}', [RegulationController::class, 'edit_doc'])->name('edit_doc');
     Route::get('view_doc/{slug}', [RegulationController::class, 'view_doc'])->name('view_doc');
     Route::post('update_doc/{id}', [RegulationController::class, 'update_doc'])->name('update_doc');
@@ -301,13 +301,13 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('/permissionstatus/{id}', [PermissionController::class, 'permissionstatus'])->name('permissionstatus');
 
     // Category management
-    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
-    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
-    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
-    Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
-    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-    Route::match(['put', 'patch'], 'categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
-    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::get('category', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('category-create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('category', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('category-view/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::get('category/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::match(['put', 'patch'], 'category/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('category/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::post('deleteCategory/{id}', [CategoryController::class, 'destroy'])->name('deleteCategory');
     Route::post('catupdate/{id}', [CategoryController::class, 'update'])->name('catUpdate');
     Route::post('/catstatus/{id}', [CategoryController::class, 'catstatus'])->name('CatStatus');
@@ -337,16 +337,16 @@ Route::group(['middleware' => ['auth', 'check.admin']], function () {
     Route::post('entityUpdate/{id}', [EntityController::class, 'update'])->name('entityUpdate');
 
     // Regulation management
-    Route::get('regulations', [RegulationController::class, 'index'])->name('regulations.index');
-    Route::get('regulations/create', [RegulationController::class, 'create'])->name('regulations.create');
-    Route::post('regulations', [RegulationController::class, 'store'])->name('regulations.store');
-    Route::get('regulations/{regulation}', [RegulationController::class, 'show'])->name('regulations.show');
-    Route::get('regulations/{regulation}/edit', [RegulationController::class, 'edit'])->name('regulations.edit');
-    Route::match(['put', 'patch'], 'regulations/{regulation}', [RegulationController::class, 'update'])->name('regulations.update');
-    Route::delete('regulations/{regulation}', [RegulationController::class, 'destroy'])->name('regulations.destroy');
+    Route::get('documents', [RegulationController::class, 'index'])->name('regulations.index');
+    Route::get('documents/create', [RegulationController::class, 'create'])->name('regulations.create');
+    Route::post('documents', [RegulationController::class, 'store'])->name('regulations.store');
+    Route::get('documents/{regulation}', [RegulationController::class, 'show'])->name('regulations.show');
+    Route::get('documents/{regulation}/edit', [RegulationController::class, 'edit'])->name('regulations.edit');
+    Route::match(['put', 'patch'], 'documents/{regulation}', [RegulationController::class, 'update'])->name('regulations.update');
+    Route::delete('documents/{regulation}', [RegulationController::class, 'destroy'])->name('regulations.destroy');
     Route::get('get-categories', [RegulationController::class, 'getCategory'])->name('getCategory');
-    Route::post('regulations/{id}', [RegulationController::class, 'destroy'])->name('deleteRegulations');
-    Route::get('regulations/create/{selectedValue}', [RegulationController::class, 'redirectToUrl'])->name('redirect');
+    Route::post('documents/{id}', [RegulationController::class, 'destroy'])->name('deleteRegulations');
+    Route::get('documents/create/{selectedValue}', [RegulationController::class, 'redirectToUrl'])->name('redirect');
     Route::post('/regstatus/{id}', [RegulationController::class, 'regstatus'])->name('RegStatus');
     Route::get('edit_doc/{slug}', [RegulationController::class, 'edit_doc'])->name('edit_doc');
     Route::get('view_doc/{slug}', [RegulationController::class, 'view_doc'])->name('view_doc');

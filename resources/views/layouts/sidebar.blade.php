@@ -218,8 +218,8 @@
                     @endcanany
 
                     @can('document-list')
-                        <li class="nk-menu-item {{ request()->is('regulations*') ? 'active current-page' : '' }}">
-                            <a href="{{ url('regulations') }}" class="nk-menu-link">
+                        <li class="nk-menu-item {{ request()->is('documents*') ? 'active current-page' : '' }}">
+                            <a href="{{ url('documents') }}" class="nk-menu-link">
                                 <span class="nk-menu-icon"><em class="icon ni ni-file-text"></em></span>
                                 <span class="nk-menu-text">Documents</span>
                             </a>
@@ -227,15 +227,15 @@
                     @endcan
 
                     @can('category-list')
-                        @php $isCategoryActive = request()->is('categories*', 'subcategories*'); @endphp
+                        @php $isCategoryActive = request()->is('category', 'category-create', 'category-view/*', 'subcategories*'); @endphp
                         <li class="nk-menu-item has-sub {{ $isCategoryActive ? 'active current-page' : '' }}">
                             <a href="#" class="nk-menu-link nk-menu-toggle">
                                 <span class="nk-menu-icon"><em class="icon ni ni-folder-list"></em></span>
                                 <span class="nk-menu-text">Category Management</span>
                             </a>
                             <ul class="nk-menu-sub" style="{{ $isCategoryActive ? 'display: block;' : '' }}">
-                                <li class="nk-menu-item {{ request()->is('categories*') ? 'active' : '' }}">
-                                    <a href="{{ url('categories') }}" class="nk-menu-link">
+                                <li class="nk-menu-item {{ request()->is('category') ? 'active' : '' }}">
+                                    <a href="{{ url('category') }}" class="nk-menu-link">
                                         <span class="nk-menu-text">Categories</span>
                                     </a>
                                 </li>

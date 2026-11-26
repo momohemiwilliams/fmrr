@@ -72,7 +72,7 @@
                             <span>Category</span>
                         </a>
                         <ul class="sub-menu" aria-expanded="false">
-                            <li><a href="{{ url('categories') }}">Catrgories</a></li>
+                            <li><a href="{{ url('category') }}">Catrgories</a></li>
                             <li><a href="{{ url('subcategories') }}">Sub Categories</a></li>
 
                         </ul>
@@ -89,7 +89,7 @@
 
 
                     <li>
-                        <a href="{{ url('regulations') }}" class="waves-effect">
+                        <a href="{{ url('documents') }}" class="waves-effect">
                             <i class="ti-pie-chart"></i>
                             <span>Documents</span>
                         </a>
@@ -165,7 +165,7 @@
                             <span>Category</span>
                         </a>
                         <ul class="sub-menu" aria-expanded="false">
-                            <li><a href="{{ url('categories') }}">Catrgories</a></li>
+                            <li><a href="{{ url('category') }}">Catrgories</a></li>
                             <li><a href="{{ url('subcategories') }}">Sub Categories</a></li>
 
                         </ul>
@@ -182,7 +182,7 @@
 
 
                     <li>
-                        <a href="{{ url('regulations') }}" class="waves-effect">
+                        <a href="{{ url('documents') }}" class="waves-effect">
                             <i class="ti-pie-chart"></i>
                             <span>Documents</span>
                         </a>
@@ -292,7 +292,7 @@
 
 
                     <li>
-                        <a href="{{ url('regulations') }}" class="waves-effect">
+                        <a href="{{ url('documents') }}" class="waves-effect">
                             <i class="ti-pie-chart"></i>
                             <span>Documents</span>
                         </a>

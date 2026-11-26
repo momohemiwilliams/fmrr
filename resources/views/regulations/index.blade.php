@@ -875,7 +875,7 @@
                                                 let selectedValue = document.getElementById('selected_value').value;
 
                                                 if (selectedValue) {
-                                                    window.location.href = '{{ url('') }}/regulations/create/' + selectedValue;
+                                                    window.location.href = '{{ url('') }}/documents/create/' + selectedValue;
                                                 }
                                             }
                                         </script>
