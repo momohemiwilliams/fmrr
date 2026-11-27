@@ -92,6 +92,10 @@ class Regulation extends Model
     // Get all related documents (both directions)
     public function relatedDocuments()
     {
+        if ($this->cachedDirectRelationships !== null) {
+            return $this->cachedDirectRelationships;
+        }
+
         $sourceRelationships = $this->sourceRelationships()->with('relatedDocument')->get();
         $relatedRelationships = $this->relatedRelationships()->with('sourceDocument')->get();
         
@@ -113,7 +117,7 @@ class Regulation extends Model
             }
         }
         
-        return $relatedDocs->unique('id');
+        return $this->cachedDirectRelationships = $relatedDocs->unique('id');
     }
 
     // Get version history (documents with same title but different versions)
@@ -125,44 +129,101 @@ class Regulation extends Model
             ->get();
     }
     
+    /**
+     * Per-instance memoized related documents collection.
+     */
+    protected $cachedRelatedDocuments = null;
+    protected $cachedFlattenedRelatedDocuments = null;
+    protected $cachedDirectRelationships = null;
+
+    /**
+     * Per-request regulation lookup cache to prevent repeated queries across rows.
+     */
+    protected static array $regulationLookupCache = [];
+
+    /**
+     * Fetch Regulation models by IDs using the per-request cache.
+     */
+    private static function fetchRegulationsCached(array $ids)
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        if (empty($ids)) {
+            return collect();
+        }
+
+        $missingIds = array_values(array_diff($ids, array_keys(self::$regulationLookupCache)));
+        if (!empty($missingIds)) {
+            $fetched = Regulation::whereIn('id', $missingIds)->get();
+            foreach ($fetched as $item) {
+                self::$regulationLookupCache[$item->id] = $item;
+            }
+            // Mark any missing/deleted IDs as null so we don't re-query them
+            foreach ($missingIds as $missingId) {
+                if (!array_key_exists($missingId, self::$regulationLookupCache)) {
+                    self::$regulationLookupCache[$missingId] = null;
+                }
+            }
+        }
+
+        $result = collect();
+        foreach ($ids as $id) {
+            if (!empty(self::$regulationLookupCache[$id])) {
+                $result->push(clone self::$regulationLookupCache[$id]);
+            }
+        }
+        return $result;
+    }
+
     // Get related documents as collection with recursive nesting
     public function getRelatedDocumentsAttribute()
     {
-        if (!$this->related_docs) {
-            return collect();
+        if ($this->cachedRelatedDocuments !== null) {
+            return $this->cachedRelatedDocuments;
         }
-        
-        $relatedIds = explode(',', $this->related_docs);
-        $relatedDocuments = Regulation::whereIn('id', $relatedIds)->get();
-        
-        // Recursively load nested related documents
-        $relatedDocuments->each(function ($doc) {
-            $doc->nested_related_documents = $this->loadNestedRelatedDocuments($doc, [$this->id]);
-        });
-        
-        return $relatedDocuments;
-    }
-    
 
-    
+        if (!$this->related_docs) {
+            return $this->cachedRelatedDocuments = collect();
+        }
+
+        $relatedIds = array_filter(array_map('trim', explode(',', $this->related_docs)));
+        $relatedDocuments = self::fetchRegulationsCached($relatedIds);
+
+        // Track visited IDs across the whole traversal to prevent exponential O(k!) explosion
+        $visitedIds = [$this->id];
+        foreach ($relatedDocuments as $doc) {
+            $visitedIds[] = $doc->id;
+        }
+
+        $relatedDocuments->each(function ($doc) use (&$visitedIds) {
+            $doc->nested_related_documents = $this->loadNestedRelatedDocuments($doc, $visitedIds);
+        });
+
+        return $this->cachedRelatedDocuments = $relatedDocuments;
+    }
+
     // Recursive method to load nested related documents with circular reference prevention
-    private function loadNestedRelatedDocuments($document, $visitedIds = [])
+    private function loadNestedRelatedDocuments($document, array &$visitedIds = [], int $depth = 0)
     {
-        if (!$document->related_docs || in_array($document->id, $visitedIds)) {
+        if (!$document->related_docs || $depth >= 5) {
             return collect();
         }
-        
-        $visitedIds[] = $document->id;
-        $nestedIds = explode(',', $document->related_docs);
-        $nestedDocuments = Regulation::whereIn('id', $nestedIds)
-            ->whereNotIn('id', $visitedIds) // Prevent circular references
-            ->get();
-        
-        // Recursively load nested documents for each nested document
-        $nestedDocuments->each(function ($nestedDoc) use ($visitedIds) {
-            $nestedDoc->nested_related_documents = $this->loadNestedRelatedDocuments($nestedDoc, $visitedIds);
+
+        $nestedIds = array_filter(array_map('intval', explode(',', $document->related_docs)));
+        $unvisitedIds = array_values(array_diff($nestedIds, $visitedIds));
+        if (empty($unvisitedIds)) {
+            return collect();
+        }
+
+        foreach ($unvisitedIds as $id) {
+            $visitedIds[] = $id;
+        }
+
+        $nestedDocuments = self::fetchRegulationsCached($unvisitedIds);
+
+        $nestedDocuments->each(function ($nestedDoc) use (&$visitedIds, $depth) {
+            $nestedDoc->nested_related_documents = $this->loadNestedRelatedDocuments($nestedDoc, $visitedIds, $depth + 1);
         });
-        
+
         return $nestedDocuments;
     }
     
@@ -271,39 +332,56 @@ class Regulation extends Model
     // Recursive method to get all related documents in a flat collection (lineage)
     public function getFlattenedRelatedDocuments($visitedIds = [])
     {
-        if (in_array($this->id, $visitedIds)) {
+        if (empty($visitedIds) && $this->cachedFlattenedRelatedDocuments !== null) {
+            return $this->cachedFlattenedRelatedDocuments;
+        }
+
+        $visitedRef = is_array($visitedIds) ? $visitedIds : [];
+        $flat = $this->collectFlattenedRelatedDocuments($visitedRef);
+
+        $result = $flat->unique('id')->filter(function ($doc) {
+            return $doc->id != $this->id;
+        });
+
+        if (empty($visitedIds)) {
+            $this->cachedFlattenedRelatedDocuments = $result;
+        }
+
+        return $result;
+    }
+
+    private function collectFlattenedRelatedDocuments(array &$visitedIds, int $depth = 0)
+    {
+        if (in_array($this->id, $visitedIds) || $depth >= 6) {
             return collect();
         }
-        
+
         $visitedIds[] = $this->id;
-        
+
         // 1. Get from DocumentRelationship records (both directions)
-        $relMethodDocs = $this->relatedDocuments(); // Using the method defined at line 93
-        
-        // 2. Get from related_docs column (simple CSV approach)
+        $relMethodDocs = $this->relatedDocuments();
+
+        // 2. Get from related_docs column (cached per-request)
         $colDocs = collect();
         if ($this->related_docs) {
-            $ids = array_filter(explode(',', $this->related_docs));
+            $ids = array_filter(array_map('trim', explode(',', $this->related_docs)));
             if (!empty($ids)) {
-                $colDocs = Regulation::whereIn('id', $ids)->get();
+                $colDocs = self::fetchRegulationsCached($ids);
             }
         }
-        
+
         // Combine immediate relatives
         $allImmediate = $relMethodDocs->merge($colDocs)->unique('id');
-        
         $flat = clone $allImmediate;
-        
-        // Recurse for each relative
+
+        // Recurse only for unvisited relatives (shared &$visitedIds prevents O(k!) blowup)
         foreach ($allImmediate as $doc) {
             if (!in_array($doc->id, $visitedIds)) {
-                $nested = $doc->getFlattenedRelatedDocuments($visitedIds);
+                $nested = $doc->collectFlattenedRelatedDocuments($visitedIds, $depth + 1);
                 $flat = $flat->merge($nested);
             }
         }
-        
-        return $flat->unique('id')->filter(function($doc) {
-            return $doc->id != $this->id;
-        });
+
+        return $flat;
     }
 }
